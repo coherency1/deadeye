@@ -8,6 +8,7 @@
 import seedrandom from 'seedrandom';
 import type { PlayerSeason, DailyChallenge, ChallengeConfig, Restriction, StatKey, GhostStep } from '../types/game';
 import { getStatValue, getDartLimit, getStatDensity } from './gameEngine';
+import { MLB_TEAMS } from '../data/teams';
 
 // Epoch: day 1 of Deadeye challenges
 const EPOCH_DATE = '2026-03-01';
@@ -79,12 +80,32 @@ export const CHALLENGE_CONFIGS: ChallengeConfig[] = [
   { seasonStart: 1950, seasonEnd: 2025, statKey: 'SV', statLabel: '40+ Save Seasons', threshold: 40 },
 ];
 
-// Restriction rotation: every 5th challenge gets a restriction (if solvable)
+// Restriction rotation: periodic restrictions across challenges (if solvable)
 const RESTRICTION_ROTATION: Array<Omit<Restriction, 'label'> | null> = [
   null, null, null, null,
-  { type: 'allstar' },        // every 5th
+  { type: 'allstar' },
   null, null, null, null,
-  { type: 'hof' },            // every 10th
+  { type: 'hof' },
+  null, null, null, null,
+  { type: 'rookie' },
+  null, null, null, null,
+  { type: 'mvp' },
+  null, null,
+  { type: 'league', value: 'AL' },
+  null, null,
+  { type: 'league', value: 'NL' },
+  null, null,
+  { type: 'gold_glove' },
+  null, null,
+  { type: 'ws_winner' },
+  null, null,
+  { type: 'cy_young' },
+  null, null,
+  { type: 'silver_slugger' },
+  null, null,
+  { type: 'division', value: 'AL East' },
+  null, null,
+  { type: 'division', value: 'NL West' },
 ];
 
 const RESTRICTION_LABELS: Record<string, string> = {
@@ -92,6 +113,13 @@ const RESTRICTION_LABELS: Record<string, string> = {
   hof: 'Hall of Famers only',
   ws_winner: 'World Series champions only',
   award: 'Award winners only',
+  rookie: 'Rookie seasons only',
+  league: '',   // dynamic, uses restriction.value
+  division: '', // dynamic, uses restriction.value
+  mvp: 'MVP winners only',
+  cy_young: 'Cy Young winners only',
+  silver_slugger: 'Silver Slugger winners only',
+  gold_glove: 'Gold Glove winners only',
 };
 
 function daysBetween(a: string, b: string): number {
@@ -105,11 +133,30 @@ function filterByStat(players: PlayerSeason[], statKey: StatKey, season: number)
 
 function filterByRestriction(players: PlayerSeason[], restriction: Restriction): PlayerSeason[] {
   switch (restriction.type) {
-    case 'hof':      return players.filter(p => p.isHOF);
-    case 'allstar':  return players.filter(p => p.isAllStar);
-    case 'ws_winner': return players.filter(p => p.wonWorldSeries);
-    case 'award':    return players.filter(p => restriction.value && p.awards.includes(restriction.value));
-    default:         return players;
+    case 'hof':           return players.filter(p => p.isHOF);
+    case 'allstar':       return players.filter(p => p.isAllStar);
+    case 'ws_winner':     return players.filter(p => p.wonWorldSeries);
+    case 'award':         return players.filter(p => restriction.value && p.awards.includes(restriction.value));
+    case 'rookie':        return players.filter(p => p.isRookie);
+    case 'league': {
+      return players.filter(p => {
+        const primaryTeam = p.teamID.split('/')[0];
+        const info = MLB_TEAMS[primaryTeam];
+        return info?.league === restriction.value;
+      });
+    }
+    case 'division': {
+      return players.filter(p => {
+        const primaryTeam = p.teamID.split('/')[0];
+        const info = MLB_TEAMS[primaryTeam];
+        return info?.division === restriction.value;
+      });
+    }
+    case 'mvp':           return players.filter(p => p.awards.includes('Most Valuable Player'));
+    case 'cy_young':      return players.filter(p => p.awards.includes('Cy Young Award'));
+    case 'silver_slugger': return players.filter(p => p.awards.includes('Silver Slugger'));
+    case 'gold_glove':    return players.filter(p => p.awards.includes('Gold Glove'));
+    default:              return players;
   }
 }
 
@@ -289,12 +336,16 @@ export function getDailyChallenge(allPlayers: PlayerSeason[]): DailyChallenge {
   let restriction: Restriction | undefined;
 
   if (rawRestriction) {
+    // Dynamic labels for league/division; static lookup for everything else
+    const label = rawRestriction.type === 'league' || rawRestriction.type === 'division'
+      ? `${rawRestriction.value} only`
+      : RESTRICTION_LABELS[rawRestriction.type];
     const restricted = filterByRestriction(pool, {
       ...rawRestriction,
-      label: RESTRICTION_LABELS[rawRestriction.type],
+      label,
     });
     if (restricted.length >= 5) {
-      restriction = { ...rawRestriction, label: RESTRICTION_LABELS[rawRestriction.type] };
+      restriction = { ...rawRestriction, label };
     }
   }
 

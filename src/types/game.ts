@@ -35,12 +35,13 @@ export interface PlayerSeason {
   isHOF: boolean;               // inducted into Hall of Fame
   awards: string[];             // e.g. ["Gold Glove", "Most Valuable Player"]
   wonWorldSeries: boolean;      // player's team won World Series that year
+  isRookie: boolean;            // first qualifying season for this playerID
 }
 
 export type StatKey = 'HR' | 'RBI' | 'H' | 'SB' | 'BB' | 'R' | 'XBH' | 'W' | 'SV' | 'K' | 'AVG' | 'OBP' | 'OPS';
 
 export interface Restriction {
-  type: 'allstar' | 'hof' | 'award' | 'ws_winner';
+  type: 'allstar' | 'hof' | 'award' | 'ws_winner' | 'rookie' | 'league' | 'division' | 'mvp' | 'cy_young' | 'silver_slugger' | 'gold_glove';
   label: string;         // "Hall of Famers only"
   value?: string;        // e.g. "Gold Glove" for award type
 }

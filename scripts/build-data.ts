@@ -222,7 +222,7 @@ interface PlayerSeasonOut {
   W: number; SV: number; K: number;
   AVG: number; OBP: number; OPS: number;  // rate stats ×1000 (e.g., .356 → 356)
   isAllStar: boolean; careerAllStars: number; isHOF: boolean;
-  awards: string[]; wonWorldSeries: boolean;
+  awards: string[]; wonWorldSeries: boolean; isRookie: boolean;
 }
 
 const output: PlayerSeasonOut[] = [];
@@ -260,6 +260,7 @@ for (const [key, agg] of batAgg) {
     isHOF: hofSet.has(agg.playerID),
     awards: awardsMap.get(asKey) ?? [],
     wonWorldSeries: wsWinners.has(`${primaryTeam}|${agg.yearID}`),
+    isRookie: false, // set in post-processing below
   });
 }
 
@@ -298,8 +299,27 @@ for (const [key, agg] of pitAgg) {
     isHOF: hofSet.has(agg.playerID),
     awards: awardsMap.get(asKey) ?? [],
     wonWorldSeries: wsWinners.has(`${primaryTeam}|${agg.yearID}`),
+    isRookie: false, // set in post-processing below
   });
 }
+
+// ── Post-processing: compute isRookie ───────────────────────────────────────
+// A season is a rookie season if it's the first qualifying year for that playerID
+const minYearByPlayer = new Map<string, number>();
+for (const rec of output) {
+  const existing = minYearByPlayer.get(rec.playerID);
+  if (existing === undefined || rec.yearID < existing) {
+    minYearByPlayer.set(rec.playerID, rec.yearID);
+  }
+}
+let rookieCount = 0;
+for (const rec of output) {
+  if (rec.yearID === minYearByPlayer.get(rec.playerID)) {
+    rec.isRookie = true;
+    rookieCount++;
+  }
+}
+console.log(`🌱 ${rookieCount} rookie seasons tagged`);
 
 output.sort((a, b) => a.yearID - b.yearID || a.name.localeCompare(b.name));
 

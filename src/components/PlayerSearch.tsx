@@ -12,6 +12,7 @@ interface PlayerSearchProps {
   challengeSeasonEnd?: number;   // undefined = single-year challenge
   usedIds: Set<string>;
   usedPlayerIds?: Set<string>;   // Normal/Hard: blocks entire player after one season used
+  showTeams?: boolean;            // false in Hard mode — hide teamID in season picker
   disabled: boolean;
   onSelect: (season: PlayerSeason) => void;
 }
@@ -24,6 +25,7 @@ export function PlayerSearch({
   challengeSeasonEnd,
   usedIds,
   usedPlayerIds,
+  showTeams = true,
   disabled,
   onSelect,
 }: PlayerSearchProps) {
@@ -196,7 +198,7 @@ export function PlayerSearch({
                   >
                     <div>
                       <span className="font-semibold text-white text-sm">{season.yearID}</span>
-                      <span className="text-xs text-slate-400 ml-2">{season.teamID}</span>
+                      {showTeams && <span className="text-xs text-slate-400 ml-2">{season.teamID}</span>}
                       {used && <span className="text-xs text-slate-500 ml-2">(used)</span>}
                     </div>
                     </button>

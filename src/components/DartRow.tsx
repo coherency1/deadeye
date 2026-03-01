@@ -5,6 +5,7 @@ interface DartRowProps {
   index: number;
   statLabel: string;
   isBust: boolean;
+  showTeam?: boolean;  // false in Hard mode
 }
 
 const QUALITY_STYLES: Record<DartQuality, { border: string; badge: string; emoji: string }> = {
@@ -14,7 +15,7 @@ const QUALITY_STYLES: Record<DartQuality, { border: string; badge: string; emoji
   small:    { border: 'border-red-800',    badge: 'bg-red-900/30 text-red-400', emoji: '🔴' },
 };
 
-export function DartRow({ dart, index, statLabel, isBust }: DartRowProps) {
+export function DartRow({ dart, index, statLabel, isBust, showTeam = true }: DartRowProps) {
   const styles = isBust
     ? { border: 'border-red-500', badge: 'bg-red-900/50 text-red-300', emoji: '💥' }
     : QUALITY_STYLES[dart.quality];
@@ -33,7 +34,7 @@ export function DartRow({ dart, index, statLabel, isBust }: DartRowProps) {
           {dart.playerSeason.name}
         </p>
         <p className="text-xs text-slate-400">
-          {dart.playerSeason.yearID} · {dart.playerSeason.teamID}
+          {dart.playerSeason.yearID}{showTeam ? ` · ${dart.playerSeason.teamID}` : ''}
         </p>
       </div>
 

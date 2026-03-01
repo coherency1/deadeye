@@ -184,6 +184,7 @@ export function GameBoard() {
   const gameOver = isGameOver(gameState);
   const usedIds = getUsedSeasonIds(gameState);
   const usedPlayerIds = gameState.mode !== 'easy' ? getUsedPlayerIds(gameState) : undefined;
+  const showTeams = gameState.mode !== 'hard';
   const canChangeMode = gameState.darts.length === 0;
 
   return (
@@ -220,6 +221,7 @@ export function GameBoard() {
               index={i}
               statLabel={gameState.challenge.statLabel}
               isBust={gameState.status === 'bust' && i === gameState.darts.length - 1}
+              showTeam={showTeams}
             />
           ))}
         </div>
@@ -237,6 +239,7 @@ export function GameBoard() {
               challengeSeasonEnd={gameState.challenge.seasonEnd}
               usedIds={usedIds}
               usedPlayerIds={usedPlayerIds}
+              showTeams={showTeams}
               disabled={false}
               onSelect={handleThrowDart}
             />

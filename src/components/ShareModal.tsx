@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { GameState } from '../types/game';
+import type { GameState, GhostStep } from '../types/game';
 import { generateShareText, copyToClipboard } from '../lib/shareText';
 import { getFinalScore, getDartsRemaining, getMultiplier } from '../lib/gameEngine';
 
@@ -100,6 +100,11 @@ export function ShareModal({ gameState, onClose }: ShareModalProps) {
           </div>
         </div>
 
+        {/* Ghost path — shown when game didn't end in bullseye */}
+        {status !== 'perfect' && challenge.ghostPath && challenge.ghostPath.length > 0 && (
+          <GhostPathSection ghostPath={challenge.ghostPath} statLabel={challenge.statLabel} />
+        )}
+
         {/* Share text preview */}
         <div className="px-6 pb-4">
           <pre className="bg-slate-800 rounded-lg p-3 text-sm text-slate-300 whitespace-pre-wrap font-mono text-xs leading-relaxed border border-slate-700">
@@ -121,6 +126,38 @@ export function ShareModal({ gameState, onClose }: ShareModalProps) {
           >
             {copied ? '✅ Copied!' : '📋 Copy Result'}
           </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Ghost Path Section ────────────────────────────────────────────────────────
+
+function GhostPathSection({ ghostPath, statLabel }: { ghostPath: GhostStep[]; statLabel: string }) {
+  const totalStat = ghostPath.reduce((sum, step) => sum + step.statValue, 0);
+  return (
+    <div className="px-6 pb-3">
+      <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
+        <p className="text-xs uppercase tracking-widest text-slate-500 mb-2">
+          Could have been solved with...
+        </p>
+        <div className="space-y-1.5">
+          {ghostPath.map((step, i) => (
+            <div key={i} className="flex items-center justify-between text-sm">
+              <span className="text-slate-300">
+                {step.name}{' '}
+                <span className="text-slate-500">{step.yearID} · {step.teamID}</span>
+              </span>
+              <span className="text-slate-400 font-mono text-xs">
+                {step.statValue}
+              </span>
+            </div>
+          ))}
+        </div>
+        <div className="mt-2 pt-2 border-t border-slate-700 flex justify-between text-xs">
+          <span className="text-slate-500">{ghostPath.length} darts · {statLabel}</span>
+          <span className="text-slate-400 font-semibold">= {totalStat}</span>
         </div>
       </div>
     </div>

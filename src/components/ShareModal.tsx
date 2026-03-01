@@ -61,10 +61,12 @@ export function ShareModal({ gameState, onClose }: ShareModalProps) {
             <span className="text-slate-400 text-sm">Darts thrown</span>
             <span className="text-white font-semibold">{darts.length}</span>
           </div>
-          {gameState.hardMode && (
+          {gameState.mode !== 'easy' && (
             <div className="flex justify-between items-center">
               <span className="text-slate-400 text-sm">Mode</span>
-              <span className="text-red-400 font-semibold text-sm">🔴 Hard</span>
+              <span className={`font-semibold text-sm ${gameState.mode === 'hard' ? 'text-red-400' : 'text-blue-400'}`}>
+                {gameState.mode === 'hard' ? '🔴 Hard' : '🔵 Normal'}
+              </span>
             </div>
           )}
         </div>

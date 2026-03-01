@@ -3,15 +3,38 @@
 // Core scoring logic, bust detection, dart quality classification
 // ─────────────────────────────────────────────────────────────────────────────
 
-import type { GameState, Dart, DartQuality, PlayerSeason, DailyChallenge } from '../types/game';
+import type { GameState, Dart, DartQuality, PlayerSeason, DailyChallenge, GameMode, StatDensity, StatKey } from '../types/game';
 
-export function createInitialState(challenge: DailyChallenge, hardMode: boolean): GameState {
+// ── Stat density classification (determines dart limits) ─────────────────────
+const STAT_DENSITY: Record<StatKey, StatDensity> = {
+  HR: 'sparse', SV: 'sparse',
+  RBI: 'standard', SB: 'standard', BB: 'standard', K: 'standard', R: 'standard', XBH: 'standard',
+  H: 'dense', W: 'dense',
+};
+
+export function getStatDensity(statKey: StatKey): StatDensity {
+  return STAT_DENSITY[statKey] ?? 'standard';
+}
+
+// ── Dart limits per mode × density ───────────────────────────────────────────
+const DART_LIMITS: Record<StatDensity, Record<Exclude<GameMode, 'easy'>, number>> = {
+  sparse:   { normal: 8,  hard: 5 },
+  standard: { normal: 9,  hard: 6 },
+  dense:    { normal: 10, hard: 7 },
+};
+
+export function getDartLimit(mode: GameMode, density: StatDensity): number {
+  if (mode === 'easy') return Infinity;
+  return DART_LIMITS[density][mode];
+}
+
+export function createInitialState(challenge: DailyChallenge, mode: GameMode): GameState {
   return {
     challenge,
     darts: [],
     remainingScore: challenge.targetScore,
     status: 'playing',
-    hardMode,
+    mode,
   };
 }
 
@@ -62,7 +85,7 @@ export function throwDart(state: GameState, season: PlayerSeason): GameState {
   };
 
   // Hard mode: going negative = bust; score stays at previousScore (real darts rules)
-  if (rawNewScore < 0 && state.hardMode) {
+  if (rawNewScore < 0 && state.mode === 'hard') {
     return {
       ...state,
       darts: [...state.darts, dart],

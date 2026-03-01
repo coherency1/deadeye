@@ -1,12 +1,19 @@
-import type { DailyChallenge } from '../types/game';
+import type { DailyChallenge, GameMode } from '../types/game';
 
 interface HeaderProps {
   challenge: DailyChallenge | null;
-  hardMode: boolean;
-  onToggleHardMode: () => void;
+  mode: GameMode;
+  onChangeMode: (mode: GameMode) => void;
+  canChangeMode: boolean;
 }
 
-export function Header({ challenge, hardMode, onToggleHardMode }: HeaderProps) {
+const MODE_CONFIG: Record<GameMode, { label: string; color: string; activeColor: string }> = {
+  easy:   { label: 'Easy',   color: 'text-slate-400', activeColor: 'bg-green-600 text-white' },
+  normal: { label: 'Normal', color: 'text-slate-400', activeColor: 'bg-blue-600 text-white' },
+  hard:   { label: 'Hard',   color: 'text-slate-400', activeColor: 'bg-red-600 text-white' },
+};
+
+export function Header({ challenge, mode, onChangeMode, canChangeMode }: HeaderProps) {
   return (
     <header className="w-full max-w-2xl mx-auto px-4 py-4">
       <div className="flex items-center justify-between">
@@ -27,7 +34,7 @@ export function Header({ challenge, hardMode, onToggleHardMode }: HeaderProps) {
 
         {/* Challenge description */}
         {challenge && (
-          <div className="text-right">
+          <div className="text-right flex-1 mx-3">
             <p className="text-sm font-semibold text-slate-200">
               {challenge.description}
             </p>
@@ -39,20 +46,27 @@ export function Header({ challenge, hardMode, onToggleHardMode }: HeaderProps) {
           </div>
         )}
 
-        {/* Hard mode toggle */}
-        <button
-          onClick={onToggleHardMode}
-          className={`
-            ml-3 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all
-            ${hardMode
-              ? 'bg-red-900/50 border-red-500 text-red-300'
-              : 'bg-slate-800 border-slate-600 text-slate-400 hover:border-slate-400'
-            }
-          `}
-          title={hardMode ? 'Hard Mode: bust if you go over' : 'Easy Mode: distance from 0 is your score'}
-        >
-          {hardMode ? '🔴 HARD' : '🟢 EASY'}
-        </button>
+        {/* Mode selector — segmented control */}
+        <div className={`flex rounded-lg border border-slate-600 overflow-hidden ${!canChangeMode ? 'opacity-50' : ''}`}>
+          {(['easy', 'normal', 'hard'] as GameMode[]).map(m => {
+            const cfg = MODE_CONFIG[m];
+            const isActive = mode === m;
+            return (
+              <button
+                key={m}
+                onClick={() => canChangeMode && onChangeMode(m)}
+                disabled={!canChangeMode}
+                className={`
+                  px-2.5 py-1.5 text-xs font-bold transition-all
+                  ${isActive ? cfg.activeColor : `bg-slate-800 ${cfg.color} hover:bg-slate-700`}
+                  ${!canChangeMode ? 'cursor-not-allowed' : 'cursor-pointer'}
+                `}
+              >
+                {cfg.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
     </header>
   );

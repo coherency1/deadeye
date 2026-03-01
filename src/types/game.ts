@@ -2,6 +2,10 @@
 // Deadeye — Core TypeScript Types
 // ─────────────────────────────────────────────────────────────────────────────
 
+export type GameMode = 'easy' | 'normal' | 'hard';
+
+export type StatDensity = 'sparse' | 'standard' | 'dense';
+
 export interface PlayerSeason {
   id: string;            // "aaronha01-1957"
   playerID: string;
@@ -76,5 +80,5 @@ export interface GameState {
   darts: Dart[];
   remainingScore: number;    // Math.abs in easy mode when negative
   status: GameStatus;
-  hardMode: boolean;
+  mode: GameMode;
 }

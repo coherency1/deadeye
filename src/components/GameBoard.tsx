@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import type Fuse from 'fuse.js';
-import type { PlayerSeason, GameState, DailyChallenge } from '../types/game';
+import type { PlayerSeason, GameState, DailyChallenge, GameMode } from '../types/game';
 import type { PlayerEntry } from '../lib/playerSearch';
 import { buildPlayerIndex, buildFuseIndex } from '../lib/playerSearch';
 import { getDailyChallenge, DEV_OVERRIDE } from '../lib/dailyChallenge';
@@ -12,6 +12,7 @@ import { PlayerSearch } from './PlayerSearch';
 import { ShareModal } from './ShareModal';
 
 const STORAGE_KEY_PREFIX = 'deadeye-';
+const MODE_STORAGE_KEY = 'deadeye-mode';
 
 function getTodayKey() {
   return STORAGE_KEY_PREFIX + new Date().toISOString().split('T')[0];
@@ -35,6 +36,20 @@ function saveState(state: GameState) {
   }
 }
 
+function loadSavedMode(): GameMode {
+  try {
+    const mode = localStorage.getItem(MODE_STORAGE_KEY);
+    if (mode === 'easy' || mode === 'normal' || mode === 'hard') return mode;
+  } catch { /* ignore */ }
+  return 'normal'; // default per spec
+}
+
+function saveMode(mode: GameMode) {
+  try {
+    localStorage.setItem(MODE_STORAGE_KEY, mode);
+  } catch { /* ignore */ }
+}
+
 function pruneOldStates() {
   try {
     const today = new Date();
@@ -42,7 +57,7 @@ function pruneOldStates() {
     cutoff.setDate(cutoff.getDate() - 90);
     const cutoffStr = cutoff.toISOString().split('T')[0];
     Object.keys(localStorage)
-      .filter(k => k.startsWith(STORAGE_KEY_PREFIX))
+      .filter(k => k.startsWith(STORAGE_KEY_PREFIX) && k !== MODE_STORAGE_KEY)
       .forEach(k => {
         const dateStr = k.replace(STORAGE_KEY_PREFIX, '');
         if (dateStr < cutoffStr) localStorage.removeItem(k);
@@ -57,7 +72,7 @@ export function GameBoard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [gameState, setGameState] = useState<GameState | null>(null);
-  const [hardMode, setHardMode] = useState(false);
+  const [mode, setMode] = useState<GameMode>(loadSavedMode);
   const [showShare, setShowShare] = useState(false);
 
   // Build search index — scoped to challenge year/range + stat so autocomplete only
@@ -89,11 +104,11 @@ export function GameBoard() {
         const saved = DEV_OVERRIDE ? null : loadSavedState();
         if (saved) {
           setGameState(saved);
-          setHardMode(saved.hardMode);
+          setMode(saved.mode);
         } else {
           // Generate fresh challenge
           const challenge: DailyChallenge = getDailyChallenge(data);
-          const initial = createInitialState(challenge, hardMode);
+          const initial = createInitialState(challenge, mode);
           setGameState(initial);
         }
       } catch (err) {
@@ -122,12 +137,12 @@ export function GameBoard() {
     setShowShare(true);
   }
 
-  function handleToggleHardMode() {
+  function handleChangeMode(newMode: GameMode) {
     if (gameState && gameState.darts.length > 0) return; // can't change mid-game
-    const next = !hardMode;
-    setHardMode(next);
+    setMode(newMode);
+    saveMode(newMode);
     if (gameState) {
-      const updated = { ...gameState, hardMode: next };
+      const updated = { ...gameState, mode: newMode };
       setGameState(updated);
     }
   }
@@ -135,7 +150,7 @@ export function GameBoard() {
   function handleNewGame() {
     if (!allSeasons.length) return;
     const challenge = getDailyChallenge(allSeasons);
-    const initial = createInitialState(challenge, hardMode);
+    const initial = createInitialState(challenge, mode);
     setGameState(initial);
     setShowShare(false);
   }
@@ -166,14 +181,16 @@ export function GameBoard() {
 
   const gameOver = isGameOver(gameState);
   const usedIds = getUsedSeasonIds(gameState);
+  const canChangeMode = gameState.darts.length === 0;
 
   return (
     <div className="min-h-screen flex flex-col max-w-2xl mx-auto pb-10">
       {/* Header */}
       <Header
         challenge={gameState.challenge}
-        hardMode={hardMode}
-        onToggleHardMode={handleToggleHardMode}
+        mode={mode}
+        onChangeMode={handleChangeMode}
+        canChangeMode={canChangeMode}
       />
 
       {/* Score display */}

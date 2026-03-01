@@ -39,7 +39,8 @@ export function generateShareText(state: GameState): string {
   lines.push(resultLine);
 
   // Mode indicator
-  if (state.hardMode) lines.push('🔴 Hard Mode');
+  if (state.mode === 'hard') lines.push('🔴 Hard Mode');
+  else if (state.mode === 'normal') lines.push('🔵 Normal Mode');
 
   // Restriction
   if (challenge.restriction) {

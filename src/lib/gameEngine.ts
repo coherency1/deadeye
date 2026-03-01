@@ -180,3 +180,58 @@ export function getUsedSeasonIds(state: GameState): Set<string> {
 export function getUsedPlayerIds(state: GameState): Set<string> {
   return new Set(state.darts.map(d => d.playerSeason.playerID));
 }
+
+// ── Selection validation with human-readable rejection reasons ───────────────
+export function validateSelection(
+  season: PlayerSeason,
+  state: GameState
+): { valid: boolean; reason?: string } {
+  const { challenge } = state;
+
+  // Check year range
+  const inYear = challenge.seasonStart !== undefined
+    ? season.yearID >= challenge.seasonStart && season.yearID <= (challenge.seasonEnd ?? challenge.seasonStart)
+    : season.yearID === challenge.season;
+  if (!inYear) {
+    const yearLabel = challenge.seasonStart
+      ? `${challenge.seasonStart}–${challenge.seasonEnd}`
+      : String(challenge.season);
+    return { valid: false, reason: `${season.name} didn't play in ${yearLabel}` };
+  }
+
+  // Check stat value > 0
+  const statValue = getStatValue(season, challenge.statKey);
+  if (statValue <= 0) {
+    return { valid: false, reason: `${season.name} had 0 ${challenge.statLabel} in ${season.yearID}` };
+  }
+
+  // Duplicate check
+  if (state.mode === 'easy') {
+    const exactDup = state.darts.some(
+      d => d.playerSeason.playerID === season.playerID && d.playerSeason.yearID === season.yearID
+    );
+    if (exactDup) return { valid: false, reason: `${season.name} ${season.yearID} already used` };
+  } else {
+    const playerUsed = state.darts.some(d => d.playerSeason.playerID === season.playerID);
+    if (playerUsed) return { valid: false, reason: `${season.name} already used this game` };
+  }
+
+  // Restriction check
+  if (challenge.restriction) {
+    const r = challenge.restriction;
+    if (r.type === 'hof' && !season.isHOF) {
+      return { valid: false, reason: `${season.name} is not in the Hall of Fame` };
+    }
+    if (r.type === 'allstar' && !season.isAllStar) {
+      return { valid: false, reason: `${season.name} was not an All-Star in ${season.yearID}` };
+    }
+    if (r.type === 'ws_winner' && !season.wonWorldSeries) {
+      return { valid: false, reason: `${season.name}'s team didn't win the World Series in ${season.yearID}` };
+    }
+    if (r.type === 'award' && r.value && !season.awards.includes(r.value)) {
+      return { valid: false, reason: `${season.name} didn't win ${r.value} in ${season.yearID}` };
+    }
+  }
+
+  return { valid: true };
+}

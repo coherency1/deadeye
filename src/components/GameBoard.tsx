@@ -4,7 +4,7 @@ import type { PlayerSeason, GameState, DailyChallenge, GameMode } from '../types
 import type { PlayerEntry } from '../lib/playerSearch';
 import { buildPlayerIndex, buildFuseIndex } from '../lib/playerSearch';
 import { getDailyChallenge, DEV_OVERRIDE } from '../lib/dailyChallenge';
-import { createInitialState, throwDart, standGame, isGameOver, getUsedSeasonIds, getUsedPlayerIds, getDartsRemaining, getMultiplier, getFinalScore, getDartLimit, getStatDensity } from '../lib/gameEngine';
+import { createInitialState, throwDart, standGame, isGameOver, getUsedSeasonIds, getUsedPlayerIds, getDartsRemaining, getMultiplier, getFinalScore, getDartLimit, getStatDensity, validateSelection } from '../lib/gameEngine';
 import { Header } from './Header';
 import { ScoreDisplay } from './ScoreDisplay';
 import { DartRow } from './DartRow';
@@ -74,20 +74,11 @@ export function GameBoard() {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [mode, setMode] = useState<GameMode>(loadSavedMode);
   const [showShare, setShowShare] = useState(false);
+  const [rejectionMessage, setRejectionMessage] = useState<string | null>(null);
 
-  // Build search index — scoped to challenge year/range + stat so autocomplete only
-  // shows players who actually have qualifying seasons to pick from.
-  const playerIndex = useMemo<PlayerEntry[]>(() => {
-    if (!gameState) return buildPlayerIndex(allSeasons);
-    const { season, seasonStart, seasonEnd, statKey } = gameState.challenge;
-    const relevant = allSeasons.filter(s => {
-      const inSeason = seasonStart !== undefined
-        ? s.yearID >= seasonStart && s.yearID <= (seasonEnd ?? seasonStart)
-        : s.yearID === season;
-      return inSeason && ((s as unknown as Record<string, number>)[statKey] ?? 0) > 0;
-    });
-    return buildPlayerIndex(relevant);
-  }, [allSeasons, gameState?.challenge.season, gameState?.challenge.seasonStart, gameState?.challenge.seasonEnd, gameState?.challenge.statKey]);
+  // Build search index from ALL players — pool membership is never revealed through search.
+  // Validation happens after selection, with specific rejection messages.
+  const playerIndex = useMemo<PlayerEntry[]>(() => buildPlayerIndex(allSeasons), [allSeasons]);
   const fuse = useMemo<Fuse<PlayerEntry>>(() => buildFuseIndex(playerIndex), [playerIndex]);
 
   // Load data + init game
@@ -123,6 +114,16 @@ export function GameBoard() {
 
   function handleThrowDart(season: PlayerSeason) {
     if (!gameState) return;
+
+    // Validate with human-readable rejection
+    const validation = validateSelection(season, gameState);
+    if (!validation.valid) {
+      setRejectionMessage(validation.reason ?? 'Invalid selection');
+      setTimeout(() => setRejectionMessage(null), 3000);
+      return;
+    }
+
+    setRejectionMessage(null);
     const next = throwDart(gameState, season);
     setGameState(next);
     saveState(next);
@@ -241,6 +242,7 @@ export function GameBoard() {
               usedPlayerIds={usedPlayerIds}
               showTeams={showTeams}
               disabled={false}
+              rejectionMessage={rejectionMessage}
               onSelect={handleThrowDart}
             />
             {/* Stand button — visible after first dart */}

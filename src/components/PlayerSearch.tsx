@@ -14,6 +14,7 @@ interface PlayerSearchProps {
   usedPlayerIds?: Set<string>;   // Normal/Hard: blocks entire player after one season used
   showTeams?: boolean;            // false in Hard mode — hide teamID in season picker
   disabled: boolean;
+  rejectionMessage?: string | null; // shown as toast below search input
   onSelect: (season: PlayerSeason) => void;
 }
 
@@ -27,6 +28,7 @@ export function PlayerSearch({
   usedPlayerIds,
   showTeams = true,
   disabled,
+  rejectionMessage,
   onSelect,
 }: PlayerSearchProps) {
   const [query, setQuery] = useState('');
@@ -145,6 +147,13 @@ export function PlayerSearch({
                 </span>
               </button>
             ))}
+          </div>
+        )}
+
+        {/* Rejection toast */}
+        {rejectionMessage && (
+          <div className="mt-2 px-4 py-2 bg-red-900/40 border border-red-700 rounded-lg text-sm text-red-300 text-center animate-pulse">
+            {rejectionMessage}
           </div>
         )}
       </div>

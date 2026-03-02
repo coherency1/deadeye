@@ -139,14 +139,14 @@ export function GameBoard() {
   }
 
   function handleChangeMode(newMode: GameMode) {
-    if (gameState && gameState.darts.length > 0) return; // can't change mid-game
     setMode(newMode);
     saveMode(newMode);
     if (gameState) {
-      const density = getStatDensity(gameState.challenge.statKey);
-      const dartLimit = getDartLimit(newMode, density);
-      const updated = { ...gameState, mode: newMode, dartLimit, strikes: 0 };
-      setGameState(updated);
+      // Reset game with same challenge but new mode settings
+      const initial = createInitialState(gameState.challenge, newMode);
+      setGameState(initial);
+      setShowShare(false);
+      setRejectionMessage(null);
     }
   }
 
@@ -186,7 +186,6 @@ export function GameBoard() {
   const usedIds = getUsedSeasonIds(gameState);
   const usedPlayerIds = gameState.mode !== 'easy' ? getUsedPlayerIds(gameState) : undefined;
   const showTeams = gameState.mode !== 'hard';
-  const canChangeMode = gameState.darts.length === 0;
 
   return (
     <div className="min-h-screen flex flex-col max-w-2xl mx-auto pb-10">
@@ -195,7 +194,6 @@ export function GameBoard() {
         challenge={gameState.challenge}
         mode={mode}
         onChangeMode={handleChangeMode}
-        canChangeMode={canChangeMode}
       />
 
       {/* Score display */}

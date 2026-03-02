@@ -4,7 +4,6 @@ interface HeaderProps {
   challenge: DailyChallenge | null;
   mode: GameMode;
   onChangeMode: (mode: GameMode) => void;
-  canChangeMode: boolean;
 }
 
 const MODE_CONFIG: Record<GameMode, { label: string; color: string; activeColor: string }> = {
@@ -13,7 +12,7 @@ const MODE_CONFIG: Record<GameMode, { label: string; color: string; activeColor:
   hard:   { label: 'Hard',   color: 'text-slate-400', activeColor: 'bg-red-600 text-white' },
 };
 
-export function Header({ challenge, mode, onChangeMode, canChangeMode }: HeaderProps) {
+export function Header({ challenge, mode, onChangeMode }: HeaderProps) {
   return (
     <header className="w-full max-w-2xl mx-auto px-4 py-4">
       <div className="flex items-center justify-between">
@@ -47,19 +46,17 @@ export function Header({ challenge, mode, onChangeMode, canChangeMode }: HeaderP
         )}
 
         {/* Mode selector — segmented control */}
-        <div className={`flex rounded-lg border border-slate-600 overflow-hidden ${!canChangeMode ? 'opacity-50' : ''}`}>
+        <div className="flex rounded-lg border border-slate-600 overflow-hidden">
           {(['easy', 'normal', 'hard'] as GameMode[]).map(m => {
             const cfg = MODE_CONFIG[m];
             const isActive = mode === m;
             return (
               <button
                 key={m}
-                onClick={() => canChangeMode && onChangeMode(m)}
-                disabled={!canChangeMode}
+                onClick={() => onChangeMode(m)}
                 className={`
-                  px-2.5 py-1.5 text-xs font-bold transition-all
+                  px-2.5 py-1.5 text-xs font-bold transition-all cursor-pointer
                   ${isActive ? cfg.activeColor : `bg-slate-800 ${cfg.color} hover:bg-slate-700`}
-                  ${!canChangeMode ? 'cursor-not-allowed' : 'cursor-pointer'}
                 `}
               >
                 {cfg.label}

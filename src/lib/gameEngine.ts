@@ -61,15 +61,13 @@ export function getStatValue(season: PlayerSeason, statKey: string): number {
   return (season as unknown as Record<string, number>)[statKey] ?? 0;
 }
 
-function getDartQuality(statValue: number, previousScore: number): DartQuality {
-  if (previousScore === 0) return 'normal';
-  const pct = statValue / previousScore;
-  if (statValue === previousScore) return 'bullseye';
-  if (pct > 0.5) return 'great';
-  return 'normal';
+function getDartQuality(statValue: number, previousScore: number, optimalTarget: number): DartQuality {
+  if (statValue > previousScore) return 'miss'; // bust/overshoot
+  if (statValue === previousScore || statValue === optimalTarget) return 'bullseye'; // Green (optimal or exact match)
+  return 'normal'; // White (sub-optimal)
 }
 
-export function throwDart(state: GameState, season: PlayerSeason): GameState {
+export function throwDart(state: GameState, season: PlayerSeason, allSeasons: PlayerSeason[]): GameState {
   if (state.status !== 'playing') return state;
 
   // Duplicate prevention:
@@ -110,8 +108,81 @@ export function throwDart(state: GameState, season: PlayerSeason): GameState {
   }
 
   const statValue = getStatValue(season, state.challenge.statKey);
+
+  // Validate against threshold filter
+  if (state.challenge.threshold) {
+    const filterKey = state.challenge.thresholdStatKey || state.challenge.statKey;
+    const filterValue = getStatValue(season, filterKey);
+    if (filterValue < state.challenge.threshold) return state;
+  }
+
   const previousScore = state.remainingScore;
   const rawNewScore = previousScore - statValue;
+
+  // ── Calculate Optimal Target for Dynamic Coloring ──
+  // 1. Filter allSeasons to only those valid right now
+  const validSeasons = allSeasons.filter(s => {
+    // Duplicate check
+    if (state.mode === 'easy') {
+      const exactDup = state.darts.some(d => d.playerSeason.playerID === s.playerID && d.playerSeason.yearID === s.yearID);
+      if (exactDup) return false;
+    } else {
+      const playerUsed = state.darts.some(d => d.playerSeason.playerID === s.playerID);
+      if (playerUsed) return false;
+    }
+
+    // Restriction check
+    if (state.challenge.restriction) {
+      const r = state.challenge.restriction;
+      if (r.type === 'hof' && !s.isHOF) return false;
+      if (r.type === 'allstar' && !s.isAllStar) return false;
+      if (r.type === 'ws_winner' && !s.wonWorldSeries) return false;
+      if (r.type === 'award' && r.value && !s.awards.includes(r.value)) return false;
+      if (r.type === 'rookie' && !s.isRookie) return false;
+      if (r.type === 'league') {
+        const pTeam = s.teamID.split('/')[0];
+        if (MLB_TEAMS[pTeam]?.league !== r.value) return false;
+      }
+      if (r.type === 'division') {
+        const pTeam = s.teamID.split('/')[0];
+        if (MLB_TEAMS[pTeam]?.division !== r.value) return false;
+      }
+      if (r.type === 'mvp' && !s.awards.includes('Most Valuable Player')) return false;
+      if (r.type === 'cy_young' && !s.awards.includes('Cy Young Award')) return false;
+      if (r.type === 'silver_slugger' && !s.awards.includes('Silver Slugger')) return false;
+      if (r.type === 'gold_glove' && !s.awards.includes('Gold Glove')) return false;
+    }
+
+    // Season range check
+    const start = state.challenge.seasonStart ?? state.challenge.season;
+    const end = state.challenge.seasonEnd ?? state.challenge.season;
+    if (s.yearID < start || s.yearID > end) return false;
+
+    // Threshold check
+    if (state.challenge.threshold) {
+      const fKey = state.challenge.thresholdStatKey || state.challenge.statKey;
+      if (getStatValue(s, fKey) < state.challenge.threshold) return false;
+    }
+
+    return true;
+  });
+
+  let optimalTarget = 0;
+  if (validSeasons.length > 0) {
+    const validStats = validSeasons.map(s => getStatValue(s, state.challenge.statKey)).filter(v => v > 0);
+    if (validStats.length > 0) {
+      const maxAvailable = Math.max(...validStats);
+      if (previousScore > maxAvailable) {
+        optimalTarget = maxAvailable;
+      } else {
+        // Find closest stat <= previousScore
+        const possibleTargets = validStats.filter(v => v <= previousScore);
+        if (possibleTargets.length > 0) {
+          optimalTarget = Math.max(...possibleTargets);
+        }
+      }
+    }
+  }
 
   // Determine dart quality
   let quality: DartQuality;
@@ -120,7 +191,7 @@ export function throwDart(state: GameState, season: PlayerSeason): GameState {
   } else if (rawNewScore < 0) {
     quality = 'miss'; // overshoot
   } else {
-    quality = getDartQuality(statValue, previousScore);
+    quality = getDartQuality(statValue, previousScore, optimalTarget);
   }
 
   const dart: Dart = {
@@ -320,6 +391,16 @@ export function validateSelection(
   const statValue = getStatValue(season, challenge.statKey);
   if (statValue <= 0) {
     return { valid: false, reason: `${season.name} had 0 ${challenge.statLabel} in ${season.yearID}` };
+  }
+
+  // Check threshold filter
+  if (challenge.threshold) {
+    const filterKey = challenge.thresholdStatKey || challenge.statKey;
+    const filterValue = getStatValue(season, filterKey);
+    if (filterValue < challenge.threshold) {
+      const label = challenge.thresholdStatLabel || challenge.statLabel;
+      return { valid: false, reason: `${season.name} had fewer than ${challenge.threshold} ${label} in ${season.yearID}` };
+    }
   }
 
   // Duplicate check

@@ -138,11 +138,11 @@ export function PlayerSearch({
             placeholder={disabled ? 'Game over' : challengeSeasonEnd !== undefined ? `Search players from ${challengeSeasonStart}–${challengeSeasonEnd}…` : `Search players from ${challengeSeasonStart}…`}
             className={`
               w-full pl-12 pr-4 py-3.5 rounded-full text-sm font-medium
-              bg-slate-900 border border-slate-700 text-slate-200 placeholder-slate-500
+              bg-slate-800 border border-slate-700 text-slate-200 placeholder-slate-500
               focus:outline-none transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)]
               ${disabled
                 ? 'opacity-50 cursor-not-allowed'
-                : 'focus:border-rose-500 focus:ring-1 focus:ring-rose-500/50 hover:bg-slate-800'
+                : 'focus:border-rose-500 focus:ring-1 focus:ring-rose-500/50 hover:bg-slate-700'
               }
             `}
           />
@@ -150,13 +150,13 @@ export function PlayerSearch({
 
         {/* Player autocomplete dropdown (opens upward since search is at page bottom) */}
         {showDropdown && !selectedPlayer && results.length > 0 && (
-          <div className="absolute z-50 left-4 right-4 bottom-full mb-3 bg-slate-900 border border-slate-700 rounded-2xl shadow-[0_-10px_40px_rgba(0,0,0,0.8)] overflow-hidden max-h-72 flex flex-col">
+          <div className="absolute z-50 left-4 right-4 bottom-full mb-3 bg-slate-800 border border-slate-700 rounded-2xl shadow-[0_-10px_40px_rgba(0,0,0,0.8)] overflow-hidden max-h-72 flex flex-col">
             <div className="overflow-y-auto w-full p-2 space-y-0.5">
               {results.map(player => (
                 <button
                   key={player.playerID}
                   onClick={() => handleSelectPlayer(player)}
-                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-800 flex items-center justify-between transition-colors group"
+                  className="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-700 flex items-center justify-between transition-colors group"
                 >
                   <span className="font-semibold text-slate-200 text-sm group-hover:text-white transition-colors">{player.name}</span>
                   <span className="text-[10px] font-mono text-slate-500">

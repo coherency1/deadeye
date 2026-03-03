@@ -9,6 +9,23 @@ interface ShareModalProps {
   onClose: () => void;
 }
 
+function getShortStatLabel(label: string): string {
+  const map: Record<string, string> = {
+    'Strikeouts': 'K',
+    'Home Runs': 'HR',
+    'Runs Batted In': 'RBI',
+    'Hits': 'H',
+    'Wins': 'W',
+    'Stolen Bases': 'SB',
+    'Walks': 'BB',
+    'Saves': 'SV',
+    'Doubles': '2B',
+    'Triples': '3B',
+    'Runs': 'R',
+  };
+  return map[label] || label;
+}
+
 export function ShareModal({ gameState, allSeasons, onClose }: ShareModalProps) {
   const [copied, setCopied] = useState(false);
   const [revealed, setRevealed] = useState(false);
@@ -29,15 +46,15 @@ export function ShareModal({ gameState, allSeasons, onClose }: ShareModalProps) 
   const finishers = findFinishers(allSeasons, gameState);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90">
-      <div className="bg-slate-900 border border-slate-700 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.8)] w-full max-w-md max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+      <div className="bg-slate-800 border border-slate-700 rounded-3xl w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl">
         {/* Header */}
-        <div className="px-6 py-5 border-b border-slate-800 bg-slate-950 flex items-center justify-between">
+        <div className="px-6 py-5 border-b border-slate-700 bg-slate-900 flex items-center justify-between rounded-t-3xl">
           <h2 className="text-xl font-black text-white tracking-wide flex items-center gap-2">
-            {status === 'perfect' ? <><img src="/icons/bullseye.png" alt="Bullseye" className="w-6 h-6 object-contain" /> Bullseye!</> :
-             status === 'bust' ? <><img src="/icons/bust.png" alt="Busted" className="w-6 h-6 object-contain" /> Busted!</> :
-             status === 'out_of_darts' ? '⏱️ Out of Darts' :
-             <><img src="/icons/stand.png" alt="Stood" className="w-6 h-6 object-contain" /> Stood</>}
+            {status === 'perfect' ? 'Bullseye!' :
+             status === 'bust' ? 'Busted!' :
+             status === 'out_of_darts' ? 'Out of Darts' :
+             'Stood'}
           </h2>
           <button
             onClick={onClose}
@@ -69,10 +86,10 @@ export function ShareModal({ gameState, allSeasons, onClose }: ShareModalProps) 
                 }
 
                 return (
-                  <span key={star} className={`transition-all duration-500 ${opacityClass}`}>
+                  <span key={star} className={`transition-all duration-500 text-3xl flex items-center justify-center w-9 h-9 ${opacityClass}`}>
                     {starRating === 5 && star <= 5 
-                      ? <img src="/icons/diamond.png" alt="Diamond" className="w-9 h-9 object-contain animate-pulse" /> 
-                      : <img src="/icons/star.png" alt="Star" className="w-9 h-9 object-contain" />}
+                      ? <span className="animate-pulse">♦</span> 
+                      : <span>★</span>}
                   </span>
                 );
               })}
@@ -92,12 +109,12 @@ export function ShareModal({ gameState, allSeasons, onClose }: ShareModalProps) 
               <div className="flex justify-center flex-wrap gap-2 mt-3">
                 {gameState.badges.includes('scenic_route') && (
                   <span className="inline-flex items-center px-2 py-1 rounded-md bg-emerald-950/50 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold uppercase tracking-wider">
-                    <img src="/icons/tent.png" alt="Tent" className="w-3.5 h-3.5 object-contain mr-1" /> The Scenic Route
+                    The Scenic Route
                   </span>
                 )}
                 {gameState.badges.includes('franchise_bonus') && (
                   <span className="inline-flex items-center px-2 py-1 rounded-md bg-indigo-950/50 border border-indigo-500/30 text-indigo-400 text-[10px] font-bold uppercase tracking-wider">
-                    <img src="/icons/building.png" alt="Building" className="w-3.5 h-3.5 object-contain mr-1" /> Franchise Bonus
+                    Franchise Bonus
                   </span>
                 )}
               </div>
@@ -117,7 +134,7 @@ export function ShareModal({ gameState, allSeasons, onClose }: ShareModalProps) 
                 <div className="flex flex-wrap gap-1 justify-end">
                   {challenge.threshold && (
                     <span className="text-[10px] uppercase font-bold tracking-wider text-sky-400 bg-sky-900/40 border border-sky-500/30 px-1.5 py-0.5 rounded">
-                      {challenge.threshold}+ {challenge.thresholdStatLabel || challenge.statLabel}
+                      [{challenge.threshold}+ {getShortStatLabel(challenge.thresholdStatLabel || challenge.statLabel)}]
                     </span>
                   )}
                   {challenge.restriction && (
@@ -146,9 +163,7 @@ export function ShareModal({ gameState, allSeasons, onClose }: ShareModalProps) 
               status === 'bust' ? 'text-rose-500' :
               'text-slate-200'
             }`}>
-              {status === 'perfect' ? <>0 <img src="/icons/bullseye.png" alt="Bullseye" className="w-3.5 h-3.5 object-contain" /></> :
-               status === 'bust' ? <>{remainingScore} <img src="/icons/bust.png" alt="Bust" className="w-3.5 h-3.5 object-contain" /></> :
-               remainingScore}
+              {status === 'perfect' ? '0' : remainingScore}
             </span>
           </div>
           <div className="flex justify-between items-center border-t border-slate-800/50 pt-3.5">
@@ -182,7 +197,7 @@ export function ShareModal({ gameState, allSeasons, onClose }: ShareModalProps) 
                 onClick={() => setRevealed(true)}
                 className="w-full py-3 rounded-xl bg-slate-800/50 border border-slate-700 hover:bg-slate-700 text-slate-300 font-bold text-[11px] uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
               >
-                👁️ Reveal Solution
+                Reveal Solution
               </button>
             ) : (
               <div className="space-y-3">
@@ -224,7 +239,7 @@ export function ShareModal({ gameState, allSeasons, onClose }: ShareModalProps) 
               }
             `}
           >
-            {copied ? '✅ COPIED TO CLIPBOARD' : '📋 COPY RESULT'}
+            {copied ? 'COPIED TO CLIPBOARD' : 'COPY RESULT'}
           </button>
         </div>
       </div>

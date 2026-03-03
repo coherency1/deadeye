@@ -26,7 +26,7 @@ export function DartRow({ dart, index, statLabel, isBust, isStrike, showTeam = t
   const isOvershoot = isBust || isStrike;
 
   return (
-    <div className={`flex items-center gap-3 px-3 py-2 border-b border-x ${styles.border} ${styles.bg} hover:bg-white-[0.02] transition-colors group first:rounded-t-lg first:border-t mt-[-1px]`}>
+    <div className={`flex items-center gap-3 px-3 py-2 border-b border-x ${styles.border} ${styles.bg} hover:bg-slate-800/80 transition-colors group last:rounded-b-xl animate-slide-in`}>
       {/* Dart number */}
       <span className="text-[10px] font-mono text-slate-500 w-5 shrink-0 text-center">{index + 1}</span>
 

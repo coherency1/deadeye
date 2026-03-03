@@ -123,7 +123,7 @@ export function GameBoard() {
     }
 
     setRejectionMessage(null);
-    const next = throwDart(gameState, season);
+    const next = throwDart(gameState, season, allSeasons);
     setGameState(next);
     saveState(next);
     if (isGameOver(next)) setShowShare(true);
@@ -219,30 +219,35 @@ export function GameBoard() {
           mode={gameState.mode}
           strikes={gameState.strikes}
           starRating={gameOver ? getStarRating(gameState) : undefined}
+          statLabel={gameState.challenge.statLabel}
         />
       </div>
 
       {/* Dart rows (darts thrown so far) */}
       {gameState.darts.length > 0 && (
-        <div className="px-4 mt-4 space-y-2">
-          <p className="text-xs uppercase tracking-widest text-slate-500 mb-2">Darts thrown</p>
-          {gameState.darts.map((dart, i) => {
-            const isLastDart = i === gameState.darts.length - 1;
-            const isBust = gameState.status === 'bust' && isLastDart;
-            // Strike = miss dart that didn't end the game (Easy mode, not the bust dart)
-            const isStrike = dart.quality === 'miss' && !isBust;
-            return (
-              <DartRow
-                key={dart.playerSeason.id}
-                dart={dart}
-                index={i}
-                statLabel={gameState.challenge.statLabel}
-                isBust={isBust}
-                isStrike={isStrike}
-                showTeam={showTeams}
-              />
-            );
-          })}
+        <div className="mt-6 mx-4 relative bg-slate-900/50 backdrop-blur-sm border border-slate-800/80 rounded-xl shadow-xl shadow-black/40">
+          <div className="px-4 py-2 border-b border-slate-800/80 bg-slate-900/80 rounded-t-xl">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Darts thrown</p>
+          </div>
+          <div className="flex flex-col">
+            {gameState.darts.map((dart, i) => {
+              const isLastDart = i === gameState.darts.length - 1;
+              const isBust = gameState.status === 'bust' && isLastDart;
+              // Strike = miss dart that didn't end the game (Easy mode, not the bust dart)
+              const isStrike = dart.quality === 'miss' && !isBust;
+              return (
+                <DartRow
+                  key={dart.playerSeason.id}
+                  dart={dart}
+                  index={i}
+                  statLabel={gameState.challenge.statLabel}
+                  isBust={isBust}
+                  isStrike={isStrike}
+                  showTeam={showTeams}
+                />
+              );
+            })}
+          </div>
         </div>
       )}
 
@@ -270,7 +275,7 @@ export function GameBoard() {
                   onClick={handleStand}
                   className="w-full py-3 rounded-full bg-slate-900/80 border border-slate-700 hover:bg-slate-800 text-slate-300 font-bold text-sm transition-colors flex items-center justify-center gap-2 shadow-sm"
                 >
-                  <img src="/icons/stand.png" alt="Stand" className="w-5 h-5 object-contain" /> Stand — Lock in Score
+                  Stand — Lock in Score
                 </button>
               </div>
             )}
@@ -311,13 +316,13 @@ export function GameBoard() {
               onClick={() => setShowShare(true)}
               className="flex-1 py-3 rounded-full bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm transition-colors shadow-lg shadow-sky-900/20"
             >
-              📋 Share Result
+              Share Result
             </button>
             <button
               onClick={handleNewGame}
               className="flex-1 py-3 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-sm transition-colors border border-slate-700"
             >
-              <img src="/icons/bullseye.png" alt="New Game" className="w-5 h-5 object-contain" /> New Game
+              New Game
             </button>
           </div>
         )}

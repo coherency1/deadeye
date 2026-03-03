@@ -9,17 +9,18 @@ interface ScoreDisplayProps {
   mode: GameMode;
   strikes?: number;           // Easy mode: overshoot count (0–3)
   starRating?: number;        // 0-3, only provided when game is over
+  statLabel: string;
 }
 
 const STATUS_CONFIG: Record<GameStatus, { label: React.ReactNode; color: string; bg: string }> = {
-  playing:      { label: 'REMAINING',      color: 'text-rose-500',    bg: 'bg-slate-900 border-slate-700' },
-  perfect:      { label: <span className="flex items-center gap-1.5"><img src="/icons/bullseye.png" alt="Bullseye" className="w-3.5 h-3.5"/> BULLSEYE</span>,    color: 'text-emerald-400', bg: 'bg-emerald-950 border-emerald-900/80 shadow-[inset_0_0_20px_rgba(16,185,129,0.1)]' },
-  bust:         { label: <span className="flex items-center gap-1.5"><img src="/icons/bust.png" alt="Bust" className="w-3.5 h-3.5"/> BUSTED</span>,      color: 'text-red-500',     bg: 'bg-red-950 border-red-900/80 shadow-[inset_0_0_20px_rgba(239,68,68,0.1)]' },
-  standing:     { label: 'FINAL SCORE',    color: 'text-amber-400',   bg: 'bg-amber-950 border-amber-900/80 shadow-[inset_0_0_20px_rgba(245,158,11,0.1)]' },
-  out_of_darts: { label: 'OUT OF DARTS',   color: 'text-orange-400',  bg: 'bg-orange-950 border-orange-900/80 shadow-[inset_0_0_20px_rgba(249,115,22,0.1)]' },
+  playing:      { label: 'REMAINING',      color: 'text-rose-500',    bg: 'bg-slate-800 border-slate-600' },
+  perfect:      { label: 'BULLSEYE',       color: 'text-emerald-400', bg: 'bg-emerald-900 border-emerald-800 shadow-[inset_0_0_20px_rgba(16,185,129,0.1)]' },
+  bust:         { label: 'BUSTED',         color: 'text-red-400',     bg: 'bg-red-900 border-red-800 shadow-[inset_0_0_20px_rgba(239,68,68,0.1)]' },
+  standing:     { label: 'FINAL SCORE',    color: 'text-yellow-400',  bg: 'bg-yellow-900/40 border-yellow-700/50 shadow-[inset_0_0_20px_rgba(234,179,8,0.1)]' },
+  out_of_darts: { label: 'OUT OF DARTS',   color: 'text-orange-400',  bg: 'bg-orange-900 border-orange-800 shadow-[inset_0_0_20px_rgba(249,115,22,0.1)]' },
 };
 
-export function ScoreDisplay({ targetScore, remainingScore, status, dartsThrown, dartLimit, mode, strikes = 0, starRating }: ScoreDisplayProps) {
+export function ScoreDisplay({ targetScore, remainingScore, status, dartsThrown, dartLimit, mode, strikes = 0, starRating, statLabel }: ScoreDisplayProps) {
   const cfg = STATUS_CONFIG[status];
   const progress = targetScore > 0 ? Math.max(0, (targetScore - remainingScore) / targetScore) : 0;
   const progressPct = Math.min(100, progress * 100);
@@ -30,9 +31,12 @@ export function ScoreDisplay({ targetScore, remainingScore, status, dartsThrown,
       {/* Score number */}
       <div className="flex flex-col items-center">
         <p className="text-[10px] uppercase tracking-widest text-slate-500 mb-1 font-bold">{cfg.label}</p>
-        <div className={`text-7xl font-mono font-black tabular-nums leading-none tracking-tighter ${cfg.color}`}>
+        <div className={`text-7xl font-mono font-black tabular-nums leading-none tracking-tighter ${cfg.color} drop-shadow-[0_0_15px_rgba(244,63,94,0.3)]`}>
           {remainingScore}
         </div>
+        <p className={`text-xl sm:text-2xl uppercase tracking-widest mt-3 mb-1 font-black ${status === 'playing' ? 'text-white' : cfg.color} drop-shadow-sm`}>
+          {statLabel}
+        </p>
         <div className="flex items-center gap-4 mt-3 text-xs uppercase tracking-wider font-bold">
           <div className="flex flex-col items-center">
             <span className="text-slate-500 text-[9px]">TARGET</span>

@@ -46,8 +46,9 @@ export function generateShareText(state: GameState): string {
     ? `${challenge.seasonStart}–${challenge.seasonEnd}`
     : String(challenge.season);
   let challengeLine = `${yearLabel} MLB · ${challenge.statLabel} — Target: ${challenge.targetScore}`;
-  if (challenge.restriction) {
-    challengeLine += ` (${challenge.restriction.label})`;
+  if (challenge.restrictions && challenge.restrictions.length > 0) {
+    const labels = challenge.restrictions.map(r => r.label).join(', ');
+    challengeLine += ` (${labels})`;
   }
   lines.push(challengeLine);
 

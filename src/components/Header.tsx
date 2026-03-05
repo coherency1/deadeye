@@ -56,16 +56,16 @@ export function Header({ challenge, mode, onChangeMode }: HeaderProps) {
             {/* Threshold Filter Badge */}
             {challenge.threshold && (
               <div className="px-2.5 py-1 rounded-md border border-sky-500/30 bg-sky-900/40 text-sky-400 text-[10px] uppercase font-bold tracking-wider flex items-center gap-1 leading-none h-7">
-                [{challenge.threshold}+ {getShortStatLabel(challenge.thresholdStatLabel || challenge.statLabel)}]
+                [{challenge.thresholdStatKey === 'AVG' ? '' : `${challenge.threshold}+ `}{getShortStatLabel(challenge.thresholdStatLabel || challenge.statLabel)}]
               </div>
             )}
 
-            {/* Restriction Badge */}
-            {challenge.restriction && (
-              <div className="px-2.5 py-1 rounded-md border border-amber-500/30 bg-amber-500/10 text-amber-400 text-[10px] uppercase font-bold tracking-wider flex items-center gap-1 shadow-[0_0_8px_rgba(245,158,11,0.1)] leading-none h-7">
-                {challenge.restriction.label}
+            {/* Restriction Badges */}
+            {challenge.restrictions && challenge.restrictions.map((r, i) => (
+              <div key={i} className="flex items-center gap-1.5 px-2 py-0.5 md:px-2.5 md:py-1 bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-full text-[9px] md:text-[10px] font-bold tracking-wider uppercase shadow-sm whitespace-nowrap">
+                {r.label}
               </div>
-            )}
+            ))}
           </div>
         )}
 

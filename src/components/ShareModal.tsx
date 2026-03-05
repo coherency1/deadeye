@@ -9,22 +9,6 @@ interface ShareModalProps {
   onClose: () => void;
 }
 
-function getShortStatLabel(label: string): string {
-  const map: Record<string, string> = {
-    'Strikeouts': 'K',
-    'Home Runs': 'HR',
-    'Runs Batted In': 'RBI',
-    'Hits': 'H',
-    'Wins': 'W',
-    'Stolen Bases': 'SB',
-    'Walks': 'BB',
-    'Saves': 'SV',
-    'Doubles': '2B',
-    'Triples': '3B',
-    'Runs': 'R',
-  };
-  return map[label] || label;
-}
 
 export function ShareModal({ gameState, allSeasons, onClose }: ShareModalProps) {
   const [copied, setCopied] = useState(false);
@@ -130,18 +114,18 @@ export function ShareModal({ gameState, allSeasons, onClose }: ShareModalProps) 
               <span className="text-slate-200 font-semibold text-sm text-right">
                 {challenge.seasonStart ? `${challenge.seasonStart}-${challenge.seasonEnd}` : challenge.season} MLB · {challenge.statLabel}
               </span>
-              {(challenge.threshold || challenge.restriction) && (
-                <div className="flex flex-wrap gap-1 justify-end">
+              {(challenge.threshold || (challenge.restrictions && challenge.restrictions.length > 0)) && (
+                <div className="mt-2 flex flex-wrap justify-center gap-2">
                   {challenge.threshold && (
-                    <span className="text-[10px] uppercase font-bold tracking-wider text-sky-400 bg-sky-900/40 border border-sky-500/30 px-1.5 py-0.5 rounded">
-                      [{challenge.threshold}+ {getShortStatLabel(challenge.thresholdStatLabel || challenge.statLabel)}]
-                    </span>
+                    <div className="flex items-center gap-1.5 px-3 py-1 bg-sky-900/40 text-sky-400 border border-sky-400/30 rounded-full text-[10px] font-bold tracking-wider uppercase">
+                      {challenge.threshold}+ {challenge.thresholdStatLabel}
+                    </div>
                   )}
-                  {challenge.restriction && (
-                    <span className="text-[10px] uppercase font-bold tracking-wider text-amber-400 bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 rounded shadow-[0_0_8px_rgba(245,158,11,0.1)]">
-                      ⚡ {challenge.restriction.label}
-                    </span>
-                  )}
+                  {challenge.restrictions && challenge.restrictions.map((r, i) => (
+                    <div key={i} className="flex items-center gap-1.5 px-3 py-1 bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-full text-[10px] font-bold tracking-wider uppercase">
+                      ⚡ {r.label}
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
@@ -360,16 +344,27 @@ function findFinishers(
     return true;
   });
 
-  // Check restriction if applicable
-  // (Skip restriction check for finisher — show any valid player from the pool)
+  // Check restrictions if applicable
+  // (Skip restrictions check for finisher — show any valid player from the pool)
+  let hintPool = pool;
+  const isFinishing = gameState.status === 'out_of_darts';
+  if (!isFinishing && challenge.restrictions && challenge.restrictions.length > 0) {
+    for (const r of challenge.restrictions) {
+      if (r.type === 'hof') hintPool = hintPool.filter(p => p.isHOF);
+      else if (r.type === 'allstar') hintPool = hintPool.filter(p => p.isAllStar);
+      else if (r.type === 'ws_winner') hintPool = hintPool.filter(p => p.wonWorldSeries);
+      else if (r.type === 'award') hintPool = hintPool.filter(p => r.value && p.awards.includes(r.value));
+      else if (r.type === 'rookie') hintPool = hintPool.filter(p => p.isRookie);
+    }
+  }
 
   // Single player: stat value === remaining
-  const single = pool.find(p => getStatValue(p, challenge.statKey) === remainingScore);
+  const single = hintPool.find(p => getStatValue(p, challenge.statKey) === remainingScore);
   if (single) return { single };
 
   // Two-player pair (two-sum): find pair summing to remaining
   const valueMap = new Map<number, PlayerSeason>();
-  for (const p of pool) {
+  for (const p of hintPool) {
     const v = getStatValue(p, challenge.statKey);
     const complement = remainingScore - v;
     if (complement > 0 && valueMap.has(complement)) {

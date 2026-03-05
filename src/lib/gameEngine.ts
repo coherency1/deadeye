@@ -9,8 +9,8 @@ import { MLB_TEAMS } from '../data/teams';
 // ── Stat density classification (determines dart limits) ─────────────────────
 const STAT_DENSITY: Record<StatKey, StatDensity> = {
   HR: 'sparse', SV: 'sparse',
-  RBI: 'standard', SB: 'standard', BB: 'standard', K: 'standard', R: 'standard',
-  H: 'dense', W: 'dense', TB: 'dense', AVG: 'dense', OBP: 'dense', OPS: 'dense',
+  RBI: 'standard', SB: 'standard', BB: 'standard', K: 'standard', R: 'standard', SO: 'standard',
+  H: 'dense', TB: 'dense', AVG: 'dense', OBP: 'dense',
 };
 
 export function getStatDensity(statKey: StatKey): StatDensity {
@@ -83,28 +83,37 @@ export function throwDart(state: GameState, season: PlayerSeason, allSeasons: Pl
     if (playerUsed) return state;
   }
 
-  // Validate against restriction
-  if (state.challenge.restriction) {
-    const r = state.challenge.restriction;
-    if (r.type === 'hof' && !season.isHOF) return state;
-    if (r.type === 'allstar' && !season.isAllStar) return state;
-    if (r.type === 'ws_winner' && !season.wonWorldSeries) return state;
-    if (r.type === 'award' && r.value && !season.awards.includes(r.value)) return state;
-    if (r.type === 'rookie' && !season.isRookie) return state;
-    if (r.type === 'league') {
-      const primaryTeam = season.teamID.split('/')[0];
-      const teamInfo = MLB_TEAMS[primaryTeam];
-      if (teamInfo?.league !== r.value) return state;
+  // Restriction check
+  if (state.challenge.restrictions && state.challenge.restrictions.length > 0) {
+    for (const r of state.challenge.restrictions) {
+      if (r.type === 'hof' && !season.isHOF) return state;
+      if (r.type === 'allstar' && !season.isAllStar) return state;
+      if (r.type === 'ws_winner' && !season.wonWorldSeries) return state;
+      if (r.type === 'award' && r.value && !season.awards.includes(r.value)) return state;
+      if (r.type === 'rookie' && !season.isRookie) return state;
+      if (r.type === 'league') {
+        const primaryTeam = season.teamID.split('/')[0];
+        const teamInfo = MLB_TEAMS[primaryTeam];
+        if (teamInfo?.league !== r.value) return state;
+      }
+      if (r.type === 'division') {
+        const primaryTeam = season.teamID.split('/')[0];
+        const teamInfo = MLB_TEAMS[primaryTeam];
+        if (teamInfo?.division !== r.value) return state;
+      }
+      if (r.type === 'mvp' && !season.awards.includes('Most Valuable Player')) return state;
+      if (r.type === 'cy_young' && !season.awards.includes('Cy Young Award')) return state;
+      if (r.type === 'silver_slugger' && !season.awards.includes('Silver Slugger')) return state;
+      if (r.type === 'gold_glove' && !season.awards.includes('Gold Glove')) return state;
+
+      // Positional Gold Glove
+      if (r.type === 'gg_infield' && !season.goldGloveIF) return state;
+      if (r.type === 'gg_outfield' && !season.goldGloveOF) return state;
+      if (r.type === 'gg_pitcher' && !season.goldGloveP) return state;
+      // Voting & ring
+      if (r.type === 'roty_votes' && !season.rotyVotes) return state;
+      if (r.type === 'ws_winner' && !season.hasRing) return state;
     }
-    if (r.type === 'division') {
-      const primaryTeam = season.teamID.split('/')[0];
-      const teamInfo = MLB_TEAMS[primaryTeam];
-      if (teamInfo?.division !== r.value) return state;
-    }
-    if (r.type === 'mvp' && !season.awards.includes('Most Valuable Player')) return state;
-    if (r.type === 'cy_young' && !season.awards.includes('Cy Young Award')) return state;
-    if (r.type === 'silver_slugger' && !season.awards.includes('Silver Slugger')) return state;
-    if (r.type === 'gold_glove' && !season.awards.includes('Gold Glove')) return state;
   }
 
   const statValue = getStatValue(season, state.challenge.statKey);
@@ -132,25 +141,26 @@ export function throwDart(state: GameState, season: PlayerSeason, allSeasons: Pl
     }
 
     // Restriction check
-    if (state.challenge.restriction) {
-      const r = state.challenge.restriction;
-      if (r.type === 'hof' && !s.isHOF) return false;
-      if (r.type === 'allstar' && !s.isAllStar) return false;
-      if (r.type === 'ws_winner' && !s.wonWorldSeries) return false;
-      if (r.type === 'award' && r.value && !s.awards.includes(r.value)) return false;
-      if (r.type === 'rookie' && !s.isRookie) return false;
-      if (r.type === 'league') {
-        const pTeam = s.teamID.split('/')[0];
-        if (MLB_TEAMS[pTeam]?.league !== r.value) return false;
+    if (state.challenge.restrictions && state.challenge.restrictions.length > 0) {
+      for (const r of state.challenge.restrictions) {
+        if (r.type === 'hof' && !s.isHOF) return false;
+        if (r.type === 'allstar' && !s.isAllStar) return false;
+        if (r.type === 'ws_winner' && !s.wonWorldSeries) return false;
+        if (r.type === 'award' && r.value && !s.awards.includes(r.value)) return false;
+        if (r.type === 'rookie' && !s.isRookie) return false;
+        if (r.type === 'league') {
+          const pTeam = s.teamID.split('/')[0];
+          if (MLB_TEAMS[pTeam]?.league !== r.value) return false;
+        }
+        if (r.type === 'division') {
+          const pTeam = s.teamID.split('/')[0];
+          if (MLB_TEAMS[pTeam]?.division !== r.value) return false;
+        }
+        if (r.type === 'mvp' && !s.awards.includes('Most Valuable Player')) return false;
+        if (r.type === 'cy_young' && !s.awards.includes('Cy Young Award')) return false;
+        if (r.type === 'silver_slugger' && !s.awards.includes('Silver Slugger')) return false;
+        if (r.type === 'gold_glove' && !s.awards.includes('Gold Glove')) return false;
       }
-      if (r.type === 'division') {
-        const pTeam = s.teamID.split('/')[0];
-        if (MLB_TEAMS[pTeam]?.division !== r.value) return false;
-      }
-      if (r.type === 'mvp' && !s.awards.includes('Most Valuable Player')) return false;
-      if (r.type === 'cy_young' && !s.awards.includes('Cy Young Award')) return false;
-      if (r.type === 'silver_slugger' && !s.awards.includes('Silver Slugger')) return false;
-      if (r.type === 'gold_glove' && !s.awards.includes('Gold Glove')) return false;
     }
 
     // Season range check
@@ -399,7 +409,10 @@ export function validateSelection(
     const filterValue = getStatValue(season, filterKey);
     if (filterValue < challenge.threshold) {
       const label = challenge.thresholdStatLabel || challenge.statLabel;
-      return { valid: false, reason: `${season.name} had fewer than ${challenge.threshold} ${label} in ${season.yearID}` };
+      const reason = filterKey === 'AVG'
+        ? `${season.name} did not hit .300 in ${season.yearID}`
+        : `${season.name} had fewer than ${challenge.threshold} ${label} in ${season.yearID}`;
+      return { valid: false, reason };
     }
   }
 
@@ -415,48 +428,93 @@ export function validateSelection(
   }
 
   // Restriction check
-  if (challenge.restriction) {
-    const r = challenge.restriction;
-    if (r.type === 'hof' && !season.isHOF) {
-      return { valid: false, reason: `${season.name} is not in the Hall of Fame` };
-    }
-    if (r.type === 'allstar' && !season.isAllStar) {
-      return { valid: false, reason: `${season.name} was not an All-Star in ${season.yearID}` };
-    }
-    if (r.type === 'ws_winner' && !season.wonWorldSeries) {
-      return { valid: false, reason: `${season.name}'s team didn't win the World Series in ${season.yearID}` };
-    }
-    if (r.type === 'award' && r.value && !season.awards.includes(r.value)) {
-      return { valid: false, reason: `${season.name} didn't win ${r.value} in ${season.yearID}` };
-    }
-    if (r.type === 'rookie' && !season.isRookie) {
-      return { valid: false, reason: `${season.name} was not a rookie in ${season.yearID}` };
-    }
-    if (r.type === 'league') {
-      const primaryTeam = season.teamID.split('/')[0];
-      const teamInfo = MLB_TEAMS[primaryTeam];
-      if (teamInfo?.league !== r.value) {
-        return { valid: false, reason: `${season.name} was not in the ${r.value} in ${season.yearID}` };
+  if (challenge.restrictions && challenge.restrictions.length > 0) {
+    for (const r of challenge.restrictions) {
+      if (r.type === 'hof' && !season.isHOF) {
+        return { valid: false, reason: `${season.name} is not in the Hall of Fame` };
       }
-    }
-    if (r.type === 'division') {
-      const primaryTeam = season.teamID.split('/')[0];
-      const teamInfo = MLB_TEAMS[primaryTeam];
-      if (teamInfo?.division !== r.value) {
-        return { valid: false, reason: `${season.name} was not in the ${r.value} in ${season.yearID}` };
+      if (r.type === 'allstar' && !season.isAllStar) {
+        return { valid: false, reason: `${season.name} was not an All-Star in ${season.yearID}` };
       }
-    }
-    if (r.type === 'mvp' && !season.awards.includes('Most Valuable Player')) {
-      return { valid: false, reason: `${season.name} didn't win MVP in ${season.yearID}` };
-    }
-    if (r.type === 'cy_young' && !season.awards.includes('Cy Young Award')) {
-      return { valid: false, reason: `${season.name} didn't win the Cy Young in ${season.yearID}` };
-    }
-    if (r.type === 'silver_slugger' && !season.awards.includes('Silver Slugger')) {
-      return { valid: false, reason: `${season.name} didn't win a Silver Slugger in ${season.yearID}` };
-    }
-    if (r.type === 'gold_glove' && !season.awards.includes('Gold Glove')) {
-      return { valid: false, reason: `${season.name} didn't win a Gold Glove in ${season.yearID}` };
+      if (r.type === 'ws_winner' && !season.wonWorldSeries) {
+        return { valid: false, reason: `${season.name} didn't play for the World Series winning team in ${season.yearID}` };
+      }
+      if (r.type === 'ws_ring' && !season.hasRing) {
+        return { valid: false, reason: `${season.name} didn't play in a World Series game in ${season.yearID}` };
+      }
+      if (r.type === 'award' && r.value && !season.awards.includes(r.value)) {
+        return { valid: false, reason: `${season.name} didn't win ${r.value} in ${season.yearID}` };
+      }
+      if (r.type === 'rookie' && !season.isRookie) {
+        return { valid: false, reason: `${season.name} was not a rookie in ${season.yearID}` };
+      }
+      if (r.type === 'league') {
+        const primaryTeam = season.teamID.split('/')[0];
+        const teamInfo = MLB_TEAMS[primaryTeam];
+        if (teamInfo?.league !== r.value) {
+          return { valid: false, reason: `${season.name} was not in the ${r.value} in ${season.yearID}` };
+        }
+      }
+      if (r.type === 'division') {
+        const primaryTeam = season.teamID.split('/')[0];
+        const teamInfo = MLB_TEAMS[primaryTeam];
+        if (teamInfo?.division !== r.value) {
+          return { valid: false, reason: `${season.name} was not in the ${r.value} in ${season.yearID}` };
+        }
+      }
+      if (r.type === 'mvp' && !season.hasCareerMVP) {
+        return { valid: false, reason: `${season.name} never won an MVP in their career` };
+      }
+      if (r.type === 'mvp_season' && !season.awards.includes('Most Valuable Player')) {
+        return { valid: false, reason: `${season.name} was not MVP in ${season.yearID}` };
+      }
+
+      if (r.type === 'cy_young' && !season.hasCareerCyYoung) {
+        return { valid: false, reason: `${season.name} never won a Cy Young in their career` };
+      }
+      if (r.type === 'cy_young_season' && !season.awards.includes('Cy Young Award')) {
+        return { valid: false, reason: `${season.name} didn't win Cy Young in ${season.yearID}` };
+      }
+
+      if (r.type === 'silver_slugger' && !season.hasCareerSilverSlugger) {
+        return { valid: false, reason: `${season.name} never won a Silver Slugger in their career` };
+      }
+      if (r.type === 'silver_slugger_season' && !season.awards.includes('Silver Slugger')) {
+        return { valid: false, reason: `${season.name} didn't win Silver Slugger in ${season.yearID}` };
+      }
+      if (r.type === 'gold_glove' && !season.hasCareerGoldGlove) {
+        return { valid: false, reason: `${season.name} never won a Gold Glove in their career` };
+      }
+      if (r.type === 'gold_glove_season' && !season.awards.includes('Gold Glove')) {
+        return { valid: false, reason: `${season.name} didn't win Gold Glove in ${season.yearID}` };
+      }
+
+      // Positional Gold Gloves
+      if (r.type === 'gg_infield' && !season.hasCareerGoldGloveIF) {
+        return { valid: false, reason: `${season.name} never won an Infield Gold Glove in their career` };
+      }
+      if (r.type === 'gg_infield_season' && !season.goldGloveIF) {
+        return { valid: false, reason: `${season.name} didn't win an Infield Gold Glove in ${season.yearID}` };
+      }
+
+      if (r.type === 'gg_outfield' && !season.hasCareerGoldGloveOF) {
+        return { valid: false, reason: `${season.name} never won an Outfield Gold Glove in their career` };
+      }
+      if (r.type === 'gg_outfield_season' && !season.goldGloveOF) {
+        return { valid: false, reason: `${season.name} didn't win an Outfield Gold Glove in ${season.yearID}` };
+      }
+
+      if (r.type === 'gg_pitcher' && !season.hasCareerGoldGloveP) {
+        return { valid: false, reason: `${season.name} never won a Pitcher Gold Glove in their career` };
+      }
+      if (r.type === 'gg_pitcher_season' && !season.goldGloveP) {
+        return { valid: false, reason: `${season.name} didn't win a Pitcher Gold Glove in ${season.yearID}` };
+      }
+
+      // Voting and Rings
+      if (r.type === 'roty_votes' && !season.rotyVotes) {
+        return { valid: false, reason: `${season.name} received no Rookie of the Year votes in ${season.yearID}` };
+      }
     }
   }
 

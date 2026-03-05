@@ -75,6 +75,7 @@ export function GameBoard() {
   const [showShare, setShowShare] = useState(false);
   const [rejectionMessage, setRejectionMessage] = useState<string | null>(null);
   const [devConfigIndex, setDevConfigIndex] = useState<number | null>(null);
+  const [showDevPanel, setShowDevPanel] = useState(false);
 
   // Build search index from ALL players — pool membership is never revealed through search.
   // Validation happens after selection, with specific rejection messages.
@@ -303,12 +304,12 @@ export function GameBoard() {
                 </>
               )}
             </p>
-            {/* Restriction reminder */}
-            {gameState.challenge.restriction && (
-              <p className="text-center text-xs text-amber-400 px-4">
-                ⚡ Only {gameState.challenge.restriction.label} count
-              </p>
-            )}
+            {/* Restriction Badges */}
+            {gameState.challenge.restrictions && gameState.challenge.restrictions.map((r, i) => (
+              <div key={i} className="flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full text-[10px] font-bold tracking-wider uppercase whitespace-nowrap">
+                ⚡ Only {r.label} count
+              </div>
+            ))}
           </>
         ) : (
           <div className="px-4 flex gap-3">
@@ -337,27 +338,56 @@ export function GameBoard() {
         />
       )}
 
-      {/* Dev panel — only in dev mode */}
-      {import.meta.env.DEV && (
+      {/* Dev Panel Toggle */}
+      {import.meta.env.DEV && !showDevPanel && (
+        <button
+          onClick={() => setShowDevPanel(true)}
+          className="fixed bottom-2 right-2 px-2 py-1 rounded bg-slate-800 text-slate-500 text-[10px] uppercase tracking-wider font-mono hover:bg-slate-700 hover:text-slate-300 z-50 opacity-30 hover:opacity-100 transition-all border border-slate-700 shadow-xl"
+          title="Show Dev Panel"
+        >
+          Dev ⚙
+        </button>
+      )}
+
+      {/* Dev panel */}
+      {import.meta.env.DEV && showDevPanel && (
         <div className="fixed bottom-0 left-0 right-0 bg-slate-900/95 border-t border-slate-700 px-3 py-2 z-50 text-xs space-y-1">
           <div className="flex items-center gap-2">
-            <span className="text-slate-500 font-mono font-bold">DEV</span>
+            <button
+              onClick={() => setShowDevPanel(false)}
+              className="text-slate-500 font-mono font-bold hover:text-slate-300 transition-colors"
+              title="Hide Dev Panel"
+            >
+              DEV ✕
+            </button>
             <button
               onClick={() => handleDevConfig((devConfigIndex ?? 0) - 1)}
               className="px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-300"
             >
               ◀
             </button>
-            <button
-              onClick={() => {
-                const input = prompt(`Config index (0–${CHALLENGE_CONFIGS.length - 1}):`);
-                if (input !== null) handleDevConfig(parseInt(input, 10) || 0);
+            <input
+              type="number"
+              min={0}
+              max={CHALLENGE_CONFIGS.length - 1}
+              key={devConfigIndex}
+              defaultValue={devConfigIndex ?? ''}
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  const val = parseInt(e.currentTarget.value, 10);
+                  if (!isNaN(val)) handleDevConfig(val);
+                  e.currentTarget.blur();
+                }
               }}
-              className="px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-amber-300 font-mono min-w-[3ch] text-center cursor-pointer"
-              title="Click to jump to a specific config"
-            >
-              {devConfigIndex !== null ? devConfigIndex : '—'}
-            </button>
+              onBlur={e => {
+                const val = parseInt(e.target.value, 10);
+                if (!isNaN(val) && val !== devConfigIndex) handleDevConfig(val);
+                e.target.value = devConfigIndex !== null ? String(devConfigIndex) : '';
+              }}
+              className="px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-amber-300 font-mono w-[6ch] text-center focus:outline-none focus:ring-1 focus:ring-amber-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              title="Enter config index (press Enter)"
+              placeholder="—"
+            />
             <button
               onClick={() => handleDevConfig((devConfigIndex ?? -1) + 1)}
               className="px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-300"
@@ -368,9 +398,9 @@ export function GameBoard() {
             <span className="text-slate-300 truncate">
               {gameState && (
                 <>
-                  T=<strong className="text-amber-300">{gameState.challenge.targetScore}</strong>
-                  {' · '}Ghost={gameState.challenge.ghostPath?.length ?? 0}
-                  {' · '}Limit={gameState.dartLimit === Infinity ? '∞' : gameState.dartLimit}
+                  T=<strong className="text-amber-300">{gameState?.challenge.targetScore}</strong>
+                  {' · '}Ghost={gameState?.challenge.ghostPath?.length ?? 0}
+                  {' · '}Limit={gameState?.dartLimit === Infinity ? '∞' : gameState?.dartLimit}
                 </>
               )}
             </span>
@@ -383,9 +413,9 @@ export function GameBoard() {
           </div>
           {gameState && (
             <div className="text-slate-500 font-mono truncate">
-              {gameState.challenge.description}
-              {gameState.challenge.ghostPath && gameState.challenge.ghostPath.length > 0 && (
-                <> · Path: {gameState.challenge.ghostPath.map(s => `${s.name} (${s.statValue})`).join(' → ')}</>
+              {gameState?.challenge.description}
+              {(gameState?.challenge.ghostPath?.length ?? 0) > 0 && (
+                <> · Path: {gameState?.challenge.ghostPath?.map(s => `${s.name} (${s.statValue})`).join(' → ')}</>
               )}
             </div>
           )}

@@ -16,95 +16,186 @@ const EPOCH_DATE = '2026-03-01';
 // DEV: force a specific challenge for testing. Set to null for production seeding.
 export const DEV_OVERRIDE: ChallengeConfig | null = null;
 
-// ── 30 Curated Challenge Configs ─────────────────────────────────────────────
-// Mix of iconic single years, era ranges, and threshold ranges.
-// Stat balance: HR 20%, SB 20%, K 17%, RBI 10%, H/SV/BB/TB/R each 7%
+// ── Challenge Configs ─────────────────────────────────────────────────────────
+// Sorted by year (ascending), split among filter types.
+// Section 1: Iconic single years — eligible for restriction filters
+// Section 2: Era ranges (no threshold) — eligible for restriction filters
+// Section 3: Threshold configs — mutually exclusive with restrictions
 export const CHALLENGE_CONFIGS: ChallengeConfig[] = [
-  // ── Iconic Single Years (8) ──────────────────────────────────────────────
-  { season: 1998, statKey: 'HR',  statLabel: 'Home Runs' },          // McGwire/Sosa HR chase
-  { season: 2001, statKey: 'HR',  statLabel: 'Home Runs' },          // Bonds 73
-  { season: 1961, statKey: 'HR',  statLabel: 'Home Runs' },          // Maris vs Mantle
-  { season: 1985, statKey: 'SB',  statLabel: 'Stolen Bases' },       // Henderson/Coleman
-  { season: 2023, statKey: 'SB',  statLabel: 'Stolen Bases' },       // New SB rules explosion
-  { season: 2004, statKey: 'H',   statLabel: 'Hits' },               // Ichiro 262 hits
-  { season: 1968, statKey: 'K',   statLabel: 'Strikeouts' }, // Year of the Pitcher
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SECTION 1: ICONIC SINGLE YEARS (sorted ascending)
+  // ═══════════════════════════════════════════════════════════════════════════
+  { season: 1920, statKey: 'HR',  statLabel: 'Home Runs' },          // Babe Ruth revolutionizes power
   { season: 1930, statKey: 'RBI', statLabel: 'RBI' },                // Hack Wilson 191 RBI
+  { season: 1941, statKey: 'H',   statLabel: 'Hits' },               // DiMaggio streak / Ted .406
+  { season: 1951, statKey: 'HR',  statLabel: 'Home Runs' },          // Shot Heard Round the World
+  { season: 1961, statKey: 'HR',  statLabel: 'Home Runs' },          // Maris 61 / Mantle
+  { season: 1968, statKey: 'K',   statLabel: 'Strikeouts' },         // Year of the Pitcher
+  { season: 1974, statKey: 'SB',  statLabel: 'Stolen Bases' },       // Lou Brock 118 SB
+  { season: 1982, statKey: 'SB',  statLabel: 'Stolen Bases' },       // Rickey Henderson 130 SB
+  { season: 1985, statKey: 'SB',  statLabel: 'Stolen Bases' },       // Henderson/Coleman
+  { season: 1995, statKey: 'HR',  statLabel: 'Home Runs' },          // Post-strike power surge
+  { season: 1998, statKey: 'HR',  statLabel: 'Home Runs' },          // McGwire/Sosa HR chase
+  { season: 2001, statKey: 'HR',  statLabel: 'Home Runs' },          // Bonds 73 HR
+  { season: 2004, statKey: 'H',   statLabel: 'Hits' },               // Ichiro 262 hits
+  { season: 2015, statKey: 'K',   statLabel: 'Strikeouts' },         // Kershaw/Scherzer K dominance
+  { season: 2023, statKey: 'SB',  statLabel: 'Stolen Bases' },       // New SB rules explosion
+  { season: 2024, statKey: 'HR',  statLabel: 'Home Runs' },          // Shohei's 50/50
 
-  // ── Era Ranges (13) ──────────────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SECTION 2: ERA RANGES — no threshold, eligible for restriction filters
+  // Sorted by ascending start year
+  // ═══════════════════════════════════════════════════════════════════════════
+  // ── Pre-1950 ───────────────────────────────────────────────────────────────
+  { seasonStart: 1900, seasonEnd: 1919, statKey: 'H',   statLabel: 'Hits' },               // Dead Ball Contact
+  { seasonStart: 1920, seasonEnd: 1941, statKey: 'HR',  statLabel: 'Home Runs' },          // Live Ball Era Power
+  { seasonStart: 1920, seasonEnd: 1941, statKey: 'RBI', statLabel: 'RBI' },                // Live Ball Run Production
+  { seasonStart: 1940, seasonEnd: 1949, statKey: 'HR',  statLabel: 'Home Runs' },          // Post-War Power
+  { seasonStart: 1940, seasonEnd: 1949, statKey: 'R',   statLabel: 'Runs' },               // Wartime Run Scoring
+  // ── 1950s ──────────────────────────────────────────────────────────────────
+  { seasonStart: 1950, seasonEnd: 1959, statKey: 'HR',  statLabel: 'Home Runs' },          // 50s Power Explosion
+  { seasonStart: 1950, seasonEnd: 1959, statKey: 'H',   statLabel: 'Hits' },               // 50s Contact Kings
+  { seasonStart: 1950, seasonEnd: 1960, statKey: 'TB',  statLabel: 'Total Bases' },        // Golden Age Sluggers
+  { seasonStart: 1950, seasonEnd: 1970, statKey: 'SV',  statLabel: 'Saves' },              // Classic Relief Aces
+  { seasonStart: 1950, seasonEnd: 1979, statKey: 'HR',  statLabel: 'Home Runs' },          // Classic Era Power
+  // ── 1960s ──────────────────────────────────────────────────────────────────
+  { seasonStart: 1960, seasonEnd: 1969, statKey: 'K',   statLabel: 'Strikeouts' },         // 60s Pitching Dominance
+  { seasonStart: 1960, seasonEnd: 1969, statKey: 'SB',  statLabel: 'Stolen Bases' },       // 60s Speed Revival
+  { seasonStart: 1960, seasonEnd: 1980, statKey: 'K',   statLabel: 'Strikeouts' },         // Classic Power Pitching
+  { seasonStart: 1965, seasonEnd: 1975, statKey: 'K',   statLabel: 'Strikeouts' },         // Lowered Mound Era
+  // ── 1970s ──────────────────────────────────────────────────────────────────
+  { seasonStart: 1970, seasonEnd: 1979, statKey: 'SV',  statLabel: 'Saves' },              // Birth of the Closer
+  { seasonStart: 1970, seasonEnd: 1979, statKey: 'SB',  statLabel: 'Stolen Bases' },       // 70s Baserunning
+  { seasonStart: 1970, seasonEnd: 1979, statKey: 'HR',  statLabel: 'Home Runs' },          // 70s Power Hitters
+  // ── 1980s ──────────────────────────────────────────────────────────────────
+  { seasonStart: 1980, seasonEnd: 1989, statKey: 'SB',  statLabel: 'Stolen Bases' },       // 80s Speedsters
+  { seasonStart: 1980, seasonEnd: 1989, statKey: 'HR',  statLabel: 'Home Runs' },          // 80s Power
+  { seasonStart: 1980, seasonEnd: 1989, statKey: 'K',   statLabel: 'Strikeouts' },         // 80s K Artists
+  { seasonStart: 1980, seasonEnd: 1995, statKey: 'H',   statLabel: 'Hits' },               // Contact Hitters
+  { seasonStart: 1980, seasonEnd: 1999, statKey: 'SB',  statLabel: 'Stolen Bases' },       // 80s-90s Baserunning
+  { seasonStart: 1985, seasonEnd: 1995, statKey: 'SB',  statLabel: 'Stolen Bases' },       // Peak Rickey Era
+  // ── 1990s ──────────────────────────────────────────────────────────────────
+  { seasonStart: 1990, seasonEnd: 1999, statKey: 'HR',  statLabel: 'Home Runs' },          // 90s Steroid Era Power
+  { seasonStart: 1990, seasonEnd: 1999, statKey: 'RBI', statLabel: 'RBI' },                // 90s Run Producers
+  { seasonStart: 1990, seasonEnd: 2000, statKey: 'R',   statLabel: 'Runs' },               // 90s Run Scorers
+  { seasonStart: 1990, seasonEnd: 2009, statKey: 'R',   statLabel: 'Runs' },               // Offensive Explosion
+  { seasonStart: 1995, seasonEnd: 2005, statKey: 'RBI', statLabel: 'RBI' },                // Run Production Boom
+  { seasonStart: 1995, seasonEnd: 2005, statKey: 'TB',  statLabel: 'Total Bases' },        // Peak Slugging Era
+  // ── 2000s ──────────────────────────────────────────────────────────────────
+  { seasonStart: 2000, seasonEnd: 2009, statKey: 'SB',  statLabel: 'Stolen Bases' },       // 2000s Speed
+  { seasonStart: 2000, seasonEnd: 2009, statKey: 'HR',  statLabel: 'Home Runs' },          // 2000s Power
+  { seasonStart: 2000, seasonEnd: 2010, statKey: 'RBI', statLabel: 'RBI' },                // 2000s Run Production
+  { seasonStart: 2000, seasonEnd: 2020, statKey: 'K',   statLabel: 'Strikeouts' },         // Strikeout Inflation
+  { seasonStart: 2000, seasonEnd: 2025, statKey: 'BB',  statLabel: 'Walks' },              // Moneyball Walks
+  { seasonStart: 2000, seasonEnd: 2025, statKey: 'SO',  statLabel: 'Batting Strikeouts' }, // Batting Whiff Era
+  { seasonStart: 2005, seasonEnd: 2015, statKey: 'TB',  statLabel: 'Total Bases' },        // Transition Era Sluggers
+  { seasonStart: 2005, seasonEnd: 2015, statKey: 'SV',  statLabel: 'Saves' },              // 2000s Elite Closers
+  // ── 2010s ──────────────────────────────────────────────────────────────────
+  { seasonStart: 2010, seasonEnd: 2019, statKey: 'K',   statLabel: 'Strikeouts' },         // Strikeout Surge
+  { seasonStart: 2010, seasonEnd: 2019, statKey: 'SV',  statLabel: 'Saves' },              // Modern Closers
+  { seasonStart: 2010, seasonEnd: 2019, statKey: 'HR',  statLabel: 'Home Runs' },          // 2010s Power
+  { seasonStart: 2010, seasonEnd: 2025, statKey: 'TB',  statLabel: 'Total Bases' },        // Total Base Leaders
+  { seasonStart: 2010, seasonEnd: 2025, statKey: 'BB',  statLabel: 'Walks' },              // Modern Plate Discipline
+  { seasonStart: 2015, seasonEnd: 2025, statKey: 'HR',  statLabel: 'Home Runs' },          // Launch Angle Era
+  { seasonStart: 2015, seasonEnd: 2025, statKey: 'SO',  statLabel: 'Batting Strikeouts' }, // Modern Whiff Era
+  { seasonStart: 2018, seasonEnd: 2025, statKey: 'RBI', statLabel: 'RBI' },                // Modern Run Producers
+  // ── 2020s ──────────────────────────────────────────────────────────────────
   { seasonStart: 2020, seasonEnd: 2025, statKey: 'HR',  statLabel: 'Home Runs' },          // Modern Mashers
   { seasonStart: 2020, seasonEnd: 2025, statKey: 'SB',  statLabel: 'Stolen Bases' },       // Modern Speed
-  { seasonStart: 2020, seasonEnd: 2025, statKey: 'K',   statLabel: 'Strikeouts' }, // Modern Strikeout Era
+  { seasonStart: 2020, seasonEnd: 2025, statKey: 'K',   statLabel: 'Strikeouts' },         // Modern Strikeout Era
   { seasonStart: 2020, seasonEnd: 2025, statKey: 'RBI', statLabel: 'RBI' },                // Modern Run Production
-  { seasonStart: 2010, seasonEnd: 2019, statKey: 'K',   statLabel: 'Strikeouts' }, // Strikeout Surge
-  { seasonStart: 2010, seasonEnd: 2019, statKey: 'SV',  statLabel: 'Saves' },              // Modern Closers
-  { seasonStart: 2000, seasonEnd: 2009, statKey: 'SB',  statLabel: 'Stolen Bases' },       // 2000s Speed
-  { seasonStart: 1980, seasonEnd: 1999, statKey: 'SB',  statLabel: 'Stolen Bases' },       // 80s-90s Baserunning
-  { seasonStart: 1960, seasonEnd: 1980, statKey: 'K',   statLabel: 'Strikeouts' }, // Classic Power Pitching
-  { seasonStart: 2000, seasonEnd: 2025, statKey: 'BB',  statLabel: 'Walks' },              // Moneyball Walks
-  { seasonStart: 2010, seasonEnd: 2025, statKey: 'TB',  statLabel: 'Total Bases' },        // Total Base Leaders
-  { seasonStart: 1990, seasonEnd: 2009, statKey: 'R',   statLabel: 'Runs' },               // Offensive Explosion Era
-  { seasonStart: 1950, seasonEnd: 1979, statKey: 'HR',  statLabel: 'Home Runs' },          // Classic Era Power
+  { seasonStart: 2020, seasonEnd: 2025, statKey: 'SV',  statLabel: 'Saves' },              // Modern Bullpens
+  { seasonStart: 2020, seasonEnd: 2025, statKey: 'H',   statLabel: 'Hits' },               // Modern Contact
+  { seasonStart: 2020, seasonEnd: 2025, statKey: 'R',   statLabel: 'Runs' },               // Modern Run Scoring
+  // ── Full Span ──────────────────────────────────────────────────────────────
+  { seasonStart: 1900, seasonEnd: 2025, statKey: 'HR',  statLabel: 'Home Runs' },          // All-Time Power
+  { seasonStart: 1900, seasonEnd: 2025, statKey: 'H',   statLabel: 'Hits' },               // All-Time Hit Kings
+  { seasonStart: 1900, seasonEnd: 2025, statKey: 'K',   statLabel: 'Strikeouts' },         // All-Time K Artists
+  { seasonStart: 1900, seasonEnd: 2025, statKey: 'SV',  statLabel: 'Saves' },              // All-Time Closers
+  { seasonStart: 1900, seasonEnd: 2025, statKey: 'SB',  statLabel: 'Stolen Bases' },       // All-Time Speed
 
-  // ── Mixed Threshold Ranges (9) ───────────────────────────────────────────
-  // Challenges where the scoring stat differs from the qualifying threshold stat
-  { seasonStart: 1950, seasonEnd: 2025, statKey: 'RBI', statLabel: 'RBI',                   threshold: 40,  thresholdStatKey: 'HR', thresholdStatLabel: 'Home Runs' },
-  { seasonStart: 1950, seasonEnd: 2025, statKey: 'BB',  statLabel: 'Walks',                 threshold: 200, thresholdStatKey: 'H',  thresholdStatLabel: 'Hits' },
-  { seasonStart: 1950, seasonEnd: 2025, statKey: 'W',  statLabel: 'Wins',                  threshold: 200, thresholdStatKey: 'K',  thresholdStatLabel: 'Strikeouts' },
-  { seasonStart: 1950, seasonEnd: 2025, statKey: 'R',   statLabel: 'Runs',                  threshold: 100, thresholdStatKey: 'BB', thresholdStatLabel: 'Walks' },
-  { seasonStart: 1950, seasonEnd: 2025, statKey: 'H',   statLabel: 'Hits',                  threshold: 50,  thresholdStatKey: 'SB', thresholdStatLabel: 'Stolen Bases' },
-  { seasonStart: 1950, seasonEnd: 2025, statKey: 'HR',  statLabel: 'Home Runs',             threshold: 100, thresholdStatKey: 'R',  thresholdStatLabel: 'Runs' },
-  { seasonStart: 1950, seasonEnd: 2025, statKey: 'SB',  statLabel: 'Stolen Bases',          threshold: 100, thresholdStatKey: 'RBI',thresholdStatLabel: 'RBI' },
-  { seasonStart: 1950, seasonEnd: 2025, statKey: 'TB',  statLabel: 'Total Bases',           threshold: 40,  thresholdStatKey: 'HR', thresholdStatLabel: 'Home Runs' },
-  { seasonStart: 1950, seasonEnd: 2025, statKey: 'K',   statLabel: 'Strikeouts',  threshold: 40,  thresholdStatKey: 'SV', thresholdStatLabel: 'Saves' },
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SECTION 3: THRESHOLD CONFIGS — mutually exclusive with restrictions
+  // Sorted by ascending start year, then by threshold type
+  // ═══════════════════════════════════════════════════════════════════════════
+  // ── 30+ HR Threshold ───────────────────────────────────────────────────────
+  { seasonStart: 1900, seasonEnd: 2025, statKey: 'RBI', statLabel: 'RBI',                   threshold: 30,  thresholdStatKey: 'HR', thresholdStatLabel: 'Home Runs' },
+  { seasonStart: 1900, seasonEnd: 2025, statKey: 'R',   statLabel: 'Runs',                  threshold: 30,  thresholdStatKey: 'HR', thresholdStatLabel: 'Home Runs' },
+  { seasonStart: 1900, seasonEnd: 2025, statKey: 'TB',  statLabel: 'Total Bases',           threshold: 30,  thresholdStatKey: 'HR', thresholdStatLabel: 'Home Runs' },
+  { seasonStart: 1990, seasonEnd: 2025, statKey: 'BB',  statLabel: 'Walks',                 threshold: 30,  thresholdStatKey: 'HR', thresholdStatLabel: 'Home Runs' },
+  // ── 40+ HR Threshold ───────────────────────────────────────────────────────
+  { seasonStart: 1900, seasonEnd: 2025, statKey: 'RBI', statLabel: 'RBI',                   threshold: 40,  thresholdStatKey: 'HR', thresholdStatLabel: 'Home Runs' },
+  { seasonStart: 1900, seasonEnd: 2025, statKey: 'TB',  statLabel: 'Total Bases',           threshold: 40,  thresholdStatKey: 'HR', thresholdStatLabel: 'Home Runs' },
+  // ── 30+ SV Threshold ───────────────────────────────────────────────────────
+  { seasonStart: 1900, seasonEnd: 2025, statKey: 'K',   statLabel: 'Strikeouts',            threshold: 30,  thresholdStatKey: 'SV', thresholdStatLabel: 'Saves' },
+  { seasonStart: 1970, seasonEnd: 2025, statKey: 'K',   statLabel: 'Strikeouts',            threshold: 40,  thresholdStatKey: 'SV', thresholdStatLabel: 'Saves' },
+  // ── 180+ H Threshold ───────────────────────────────────────────────────────
+  { seasonStart: 1900, seasonEnd: 2025, statKey: 'BB',  statLabel: 'Walks',                 threshold: 180, thresholdStatKey: 'H',  thresholdStatLabel: 'Hits' },
+  { seasonStart: 1900, seasonEnd: 2025, statKey: 'R',   statLabel: 'Runs',                  threshold: 180, thresholdStatKey: 'H',  thresholdStatLabel: 'Hits' },
+  // ── 200+ H Threshold ───────────────────────────────────────────────────────
+  { seasonStart: 1900, seasonEnd: 2025, statKey: 'BB',  statLabel: 'Walks',                 threshold: 200, thresholdStatKey: 'H',  thresholdStatLabel: 'Hits' },
+  { seasonStart: 1900, seasonEnd: 2025, statKey: 'SB',  statLabel: 'Stolen Bases',          threshold: 200, thresholdStatKey: 'H',  thresholdStatLabel: 'Hits' },
+  // ── Mixed Cross-Stat Thresholds ────────────────────────────────────────────
+  { seasonStart: 1900, seasonEnd: 2025, statKey: 'SV',  statLabel: 'Saves',                 threshold: 200, thresholdStatKey: 'K',  thresholdStatLabel: 'Strikeouts' },
+  { seasonStart: 1900, seasonEnd: 2025, statKey: 'R',   statLabel: 'Runs',                  threshold: 80,  thresholdStatKey: 'BB', thresholdStatLabel: 'Walks' },
+  { seasonStart: 1900, seasonEnd: 2025, statKey: 'H',   statLabel: 'Hits',                  threshold: 50,  thresholdStatKey: 'SB', thresholdStatLabel: 'Stolen Bases' },
+  { seasonStart: 1900, seasonEnd: 2025, statKey: 'HR',  statLabel: 'Home Runs',             threshold: 100, thresholdStatKey: 'R',  thresholdStatLabel: 'Runs' },
+  { seasonStart: 1900, seasonEnd: 2025, statKey: 'SB',  statLabel: 'Stolen Bases',          threshold: 100, thresholdStatKey: 'RBI',thresholdStatLabel: 'RBI' },
+  { seasonStart: 1900, seasonEnd: 2025, statKey: 'R',   statLabel: 'Runs',                  threshold: 40,  thresholdStatKey: 'HR', thresholdStatLabel: 'Home Runs' },
+  { seasonStart: 1900, seasonEnd: 2025, statKey: 'BB',  statLabel: 'Walks',                 threshold: 40,  thresholdStatKey: 'SB', thresholdStatLabel: 'Stolen Bases' },
+  { seasonStart: 1900, seasonEnd: 2025, statKey: 'SB',  statLabel: 'Stolen Bases',          threshold: 80,  thresholdStatKey: 'BB', thresholdStatLabel: 'Walks' },
+  { seasonStart: 1900, seasonEnd: 2025, statKey: 'TB',  statLabel: 'Total Bases',           threshold: 200, thresholdStatKey: 'H',  thresholdStatLabel: 'Hits' },
+  // ── 200+ K Threshold ───────────────────────────────────────────────────────
+  { seasonStart: 1900, seasonEnd: 2025, statKey: 'K',   statLabel: 'Strikeouts',            threshold: 200, thresholdStatKey: 'K',  thresholdStatLabel: 'Strikeouts' },
+  { seasonStart: 1900, seasonEnd: 2025, statKey: 'SV',  statLabel: 'Saves',                 threshold: 40,  thresholdStatKey: 'K',  thresholdStatLabel: 'Strikeouts' },
+  // ── Club Categories ────────────────────────────────────────────────────────
+  { seasonStart: 1900, seasonEnd: 2025, statKey: 'SB',  statLabel: 'Stolen Bases',          threshold: 20,  thresholdStatKey: 'HR', thresholdStatLabel: 'Home Runs' },    // 20HR/20SB Club
+  { seasonStart: 1900, seasonEnd: 2025, statKey: 'SB',  statLabel: 'Stolen Bases',          threshold: 30,  thresholdStatKey: 'HR', thresholdStatLabel: 'Home Runs' },    // 30HR/30SB Club
+  { seasonStart: 1900, seasonEnd: 2025, statKey: 'HR',  statLabel: 'Home Runs',             threshold: 30,  thresholdStatKey: 'SB', thresholdStatLabel: 'Stolen Bases' }, // Power-Speed
+  { seasonStart: 1900, seasonEnd: 2025, statKey: 'H',   statLabel: 'Hits',                  threshold: 300, thresholdStatKey: 'AVG',thresholdStatLabel: '.300+ AVG only' },    // .300 Hitters
+  { seasonStart: 1900, seasonEnd: 2025, statKey: 'HR',  statLabel: 'Home Runs',             threshold: 200, thresholdStatKey: 'SO', thresholdStatLabel: 'Batting Strikeouts' }, // Whiff Power
+  { seasonStart: 1900, seasonEnd: 2025, statKey: 'HR',  statLabel: 'Home Runs',             threshold: 100, thresholdStatKey: 'RBI',thresholdStatLabel: 'RBI' },          // 100+ RBI Club
+  { seasonStart: 1900, seasonEnd: 2025, statKey: 'SB',  statLabel: 'Stolen Bases',          threshold: 100, thresholdStatKey: 'R',  thresholdStatLabel: 'Runs' },         // 100+ R Speedsters
 ];
 
-// ── Restriction rotation ─────────────────────────────────────────────────────
-// Periodic restrictions across challenges. Applied to ALL config types.
-// Validated with gate checks: must have ≥15 deduped players and produce a
-// solvable target — otherwise restriction is silently dropped.
-const RESTRICTION_ROTATION: Array<Omit<Restriction, 'label'> | null> = [
-  null, null, null, null,
-  { type: 'allstar' },
-  null, null, null, null,
-  { type: 'hof' },
-  null, null, null, null,
-  { type: 'rookie' },
-  null, null, null, null,
-  { type: 'mvp' },
-  null, null,
-  { type: 'league', value: 'AL' },
-  null, null,
-  { type: 'league', value: 'NL' },
-  null, null,
-  { type: 'gold_glove' },
-  null, null,
-  { type: 'ws_winner' },
-  null, null,
-  { type: 'cy_young' },
-  null, null,
-  { type: 'silver_slugger' },
-  null, null,
-  { type: 'division', value: 'AL East' },
-  null, null,
-  { type: 'division', value: 'NL West' },
-];
-
-const RESTRICTION_LABELS: Record<string, string> = {
-  allstar: 'All-Star seasons only',
-  hof: 'Hall of Famers only',
-  ws_winner: 'World Series champions only',
-  award: 'Award winners only',
-  rookie: 'Rookie seasons only',
-  league: '',   // dynamic, uses restriction.value
-  division: '', // dynamic, uses restriction.value
-  mvp: 'MVP winners only',
-  cy_young: 'Cy Young winners only',
-  silver_slugger: 'Silver Slugger winners only',
-  gold_glove: 'Gold Glove winners only',
+// ── Combinatorial Restriction Categories ───────────────────────────────────
+// Grouped by type so that a daily challenge can mix constraints (e.g., Award + Geography + Status)
+// without clashing (e.g., picking both AL West and NL West).
+const RESTRICTION_CATEGORIES: Record<string, Restriction[]> = {
+  award: [
+    { type: 'mvp', label: '1+ MVP' },
+    { type: 'mvp_season', label: 'MVP' },
+    { type: 'cy_young', label: '1+ Cy Young' },
+    { type: 'cy_young_season', label: 'Cy Young' },
+    { type: 'silver_slugger', label: '1+ Silver Slugger' },
+    { type: 'silver_slugger_season', label: 'Silver Slugger' },
+    { type: 'gold_glove', label: '1+ Gold Glove' },
+    { type: 'gold_glove_season', label: 'Gold Glove' },
+    { type: 'allstar', label: 'All-Star same season' },
+  ],
+  positional: [
+    { type: 'gg_infield', label: '1+ Gold Glove (IF)' },
+    { type: 'gg_infield_season', label: 'Gold Glove (IF)' },
+    { type: 'gg_outfield', label: '1+ Gold Glove (OF)' },
+    { type: 'gg_outfield_season', label: 'Gold Glove (OF)' },
+    { type: 'gg_pitcher', label: '1+ Gold Glove (P)' },
+    { type: 'gg_pitcher_season', label: 'Gold Glove (P)' },
+    { type: 'roty_votes', label: 'Received ROTY votes' },
+    { type: 'ws_winner', label: 'Won World Series' },
+    { type: 'ws_ring', label: 'Played in WS' },
+  ],
+  status: [
+    { type: 'hof', label: 'Hall of Fame' },
+    { type: 'rookie', label: 'Rookie season' },
+  ],
+  team_or_league: [
+    { type: 'league', value: 'AL', label: 'AL' },
+    { type: 'league', value: 'NL', label: 'NL' },
+  ]
 };
 
 // Minimum deduped players required for a restriction to be applied
-const MIN_RESTRICTED_POOL = 15;
+const MIN_RESTRICTED_POOL = 8;
 
 function daysBetween(a: string, b: string): number {
   const msPerDay = 24 * 60 * 60 * 1000;
@@ -115,33 +206,53 @@ function filterByStat(players: PlayerSeason[], statKey: StatKey, season: number)
   return players.filter(p => p.yearID === season && getStatValue(p, statKey) > 0);
 }
 
-function filterByRestriction(players: PlayerSeason[], restriction: Restriction): PlayerSeason[] {
-  switch (restriction.type) {
-    case 'hof':           return players.filter(p => p.isHOF);
-    case 'allstar':       return players.filter(p => p.isAllStar);
-    case 'ws_winner':     return players.filter(p => p.wonWorldSeries);
-    case 'award':         return players.filter(p => restriction.value && p.awards.includes(restriction.value));
-    case 'rookie':        return players.filter(p => p.isRookie);
-    case 'league': {
-      return players.filter(p => {
-        const primaryTeam = p.teamID.split('/')[0];
-        const info = MLB_TEAMS[primaryTeam];
-        return info?.league === restriction.value;
-      });
+function filterByRestrictions(players: PlayerSeason[], restrictions: Restriction[]): PlayerSeason[] {
+  let filtered = players;
+  for (const restriction of restrictions) {
+    if (filtered.length === 0) break;
+    switch (restriction.type) {
+      case 'hof':           filtered = filtered.filter(p => p.isHOF); break;
+      case 'allstar':       filtered = filtered.filter(p => p.isAllStar); break;
+      case 'ws_winner':     filtered = filtered.filter(p => p.wonWorldSeries); break;
+      case 'ws_ring':       filtered = filtered.filter(p => p.hasRing); break;
+      case 'award':         filtered = filtered.filter(p => restriction.value && p.awards.includes(restriction.value)); break;
+      case 'rookie':        filtered = filtered.filter(p => p.isRookie); break;
+      case 'league': {
+        filtered = filtered.filter(p => {
+          const primaryTeam = p.teamID.split('/')[0];
+          const info = MLB_TEAMS[primaryTeam];
+          return info?.league === restriction.value;
+        });
+        break;
+      }
+      case 'division': {
+        filtered = filtered.filter(p => {
+          const primaryTeam = p.teamID.split('/')[0];
+          const info = MLB_TEAMS[primaryTeam];
+          return info?.division === restriction.value;
+        });
+        break;
+      }
+      case 'mvp':           filtered = filtered.filter(p => p.hasCareerMVP); break;
+      case 'mvp_season':    filtered = filtered.filter(p => p.awards.includes('Most Valuable Player')); break;
+      case 'cy_young':      filtered = filtered.filter(p => p.hasCareerCyYoung); break;
+      case 'cy_young_season': filtered = filtered.filter(p => p.awards.includes('Cy Young Award')); break;
+      case 'silver_slugger': filtered = filtered.filter(p => p.hasCareerSilverSlugger); break;
+      case 'silver_slugger_season': filtered = filtered.filter(p => p.awards.includes('Silver Slugger')); break;
+      case 'gold_glove':    filtered = filtered.filter(p => p.hasCareerGoldGlove); break;
+      case 'gold_glove_season': filtered = filtered.filter(p => p.awards.includes('Gold Glove')); break;
+      // Positional Gold Glove
+      case 'gg_infield':    filtered = filtered.filter(p => p.hasCareerGoldGloveIF); break;
+      case 'gg_infield_season': filtered = filtered.filter(p => p.goldGloveIF); break;
+      case 'gg_outfield':   filtered = filtered.filter(p => p.hasCareerGoldGloveOF); break;
+      case 'gg_outfield_season': filtered = filtered.filter(p => p.goldGloveOF); break;
+      case 'gg_pitcher':    filtered = filtered.filter(p => p.hasCareerGoldGloveP); break;
+      case 'gg_pitcher_season': filtered = filtered.filter(p => p.goldGloveP); break;
+      // Voting
+      case 'roty_votes':    filtered = filtered.filter(p => p.rotyVotes); break;
     }
-    case 'division': {
-      return players.filter(p => {
-        const primaryTeam = p.teamID.split('/')[0];
-        const info = MLB_TEAMS[primaryTeam];
-        return info?.division === restriction.value;
-      });
-    }
-    case 'mvp':           return players.filter(p => p.awards.includes('Most Valuable Player'));
-    case 'cy_young':      return players.filter(p => p.awards.includes('Cy Young Award'));
-    case 'silver_slugger': return players.filter(p => p.awards.includes('Silver Slugger'));
-    case 'gold_glove':    return players.filter(p => p.awards.includes('Gold Glove'));
-    default:              return players;
   }
+  return filtered;
 }
 
 // ── Deduplicate pool by playerID, keeping best stat value per player ──────────
@@ -406,14 +517,14 @@ function buildPool(allPlayers: PlayerSeason[], config: ChallengeConfig): PlayerS
  * 2. Target generation succeeds (not just fallback)
  * Returns the restriction if valid, undefined if it should be dropped.
  */
-function validateRestriction(
+function validateRestrictions(
   pool: PlayerSeason[],
-  restriction: Restriction,
+  restrictions: Restriction[],
   statKey: StatKey,
   dartLimit: number,
   rng: () => number,
 ): { valid: boolean; restrictedPool: PlayerSeason[] } {
-  const restrictedPool = filterByRestriction(pool, restriction);
+  const restrictedPool = filterByRestrictions(pool, restrictions);
 
   // Gate 1: enough deduped players
   const deduped = deduplicatePool(restrictedPool, statKey);
@@ -436,15 +547,16 @@ function validateRestriction(
 // This is now purely used as a clean fallback for shareText.ts
 function buildDescription(
   config: ChallengeConfig,
-  restriction?: Restriction,
+  restrictions?: Restriction[],
 ): string {
   const isRange = config.seasonStart !== undefined;
   const seasonDisplay = isRange
     ? `${config.seasonStart}–${config.seasonEnd}`
     : String(config.season);
 
-  if (restriction) {
-    return `${seasonDisplay} MLB · ${config.statLabel} (${restriction.label})`;
+  if (restrictions && restrictions.length > 0) {
+    const labels = restrictions.map(r => r.label).join(' & ');
+    return `${seasonDisplay} MLB · ${config.statLabel} (${labels})`;
   } else {
     return `${seasonDisplay} MLB · ${config.statLabel}`;
   }
@@ -463,30 +575,58 @@ export function getDailyChallenge(allPlayers: PlayerSeason[]): DailyChallenge {
 
   const pool = buildPool(allPlayers, config);
 
-  // Restriction: rotation-based, validated with gate checks
-  const rotationIndex = challengeNumber % RESTRICTION_ROTATION.length;
-  const rawRestriction = RESTRICTION_ROTATION[rotationIndex];
-  let restriction: Restriction | undefined;
+  // Restriction: Multi-category combinatorial picking
+  // MUTUAL EXCLUSIVITY: configs with stat thresholds skip restriction logic
+  let selectedRestrictions: Restriction[] = [];
+  const hasThreshold = config.threshold != null;
 
-  const rng = seedrandom(today + '-target');
-  const density = getStatDensity(config.statKey);
-  const dartLimit = getDartLimit('normal', density);
+  if (!hasThreshold && config.season === undefined) {
+    const restrictRng = seedrandom(today + '-restrict-combo');
+    const MAX_RETRIES = 10;
+    
+    const density = getStatDensity(config.statKey);
+    const dartLimit = getDartLimit('normal', density);
 
-  if (rawRestriction) {
-    const label = rawRestriction.type === 'league' || rawRestriction.type === 'division'
-      ? `${rawRestriction.value} only`
-      : RESTRICTION_LABELS[rawRestriction.type];
-    const candidateRestriction: Restriction = { ...rawRestriction, label };
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      const numRestrictions = 1;
+      
+      // Pick N distinct categories
+      const categoryKeys = Object.keys(RESTRICTION_CATEGORIES);
+      for (let i = categoryKeys.length - 1; i > 0; i--) {
+        const j = Math.floor(restrictRng() * (i + 1));
+        [categoryKeys[i], categoryKeys[j]] = [categoryKeys[j], categoryKeys[i]];
+      }
+      const selectedCategories = categoryKeys.slice(0, numRestrictions);
+      
+      // Pick 1 specific constraint from each chosen category
+      const candidateRestrictions: Restriction[] = [];
+      for (const cat of selectedCategories) {
+        const options = RESTRICTION_CATEGORIES[cat];
+        const selected = options[Math.floor(restrictRng() * options.length)];
+        candidateRestrictions.push(selected);
+      }
+      
+      // Validate combination
+      const validation = validateRestrictions(pool, candidateRestrictions, config.statKey, dartLimit, restrictRng);
+      if (validation.valid) {
+        selectedRestrictions = candidateRestrictions;
+        break;
+      }
+    }
 
-    const validation = validateRestriction(pool, candidateRestriction, config.statKey, dartLimit, rng);
-    if (validation.valid) {
-      restriction = candidateRestriction;
+    // Fallback to All-Star if everything failed
+    if (selectedRestrictions.length === 0) {
+      const fallback: Restriction = { type: 'allstar', label: 'All-Star same season' };
+      const val = validateRestrictions(pool, [fallback], config.statKey, dartLimit, restrictRng);
+      if (val.valid) selectedRestrictions = [fallback];
     }
   }
 
-  const finalPool = restriction ? filterByRestriction(pool, restriction) : pool;
+  const finalPool = selectedRestrictions.length > 0 ? filterByRestrictions(pool, selectedRestrictions) : pool;
 
   // Generate target: desiredK = hard dart limit (best path = hard mode darts)
+  const density = hasThreshold ? getStatDensity(config.statKey) : getStatDensity(config.statKey);
+  const dartLimit = hasThreshold ? getDartLimit('normal', density) : getDartLimit('normal', density);
   const targetRng = seedrandom(today + '-target-gen');
   const hardLimit = getDartLimit('hard', density);
   const { target, ghostPath } = generateTarget(finalPool, config.statKey, targetRng, hardLimit, dartLimit);
@@ -503,8 +643,11 @@ export function getDailyChallenge(allPlayers: PlayerSeason[]): DailyChallenge {
     statKey: config.statKey,
     statLabel: config.statLabel,
     targetScore: target,
-    restriction,
-    description: buildDescription(config, restriction),
+    restrictions: selectedRestrictions.length > 0 ? selectedRestrictions : undefined,
+    description: buildDescription(config, selectedRestrictions.length > 0 ? selectedRestrictions : undefined),
+    threshold: config.threshold,
+    thresholdStatKey: config.thresholdStatKey,
+    thresholdStatLabel: config.thresholdStatLabel,
     ghostPath,
   };
 }
@@ -520,10 +663,44 @@ export function getChallengeByIndex(allPlayers: PlayerSeason[], configIndex: num
   const density = getStatDensity(config.statKey);
   const dartLimit = getDartLimit('normal', density);
 
-  // No restriction for dev cycling — keeps it simple for testing target quality
+  // ── Apply Restrictions for Dev Cycling ──
+  const hasThreshold = config.threshold != null;
+  let selectedRestrictions: Restriction[] = [];
+
+  if (!hasThreshold && config.season === undefined) {
+    const restrictRng = seedrandom(`dev-restrict-${configIndex}`);
+    const MAX_RETRIES = 10;
+    
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      const numRestrictions = 1;
+      
+      const categoryKeys = Object.keys(RESTRICTION_CATEGORIES);
+      for (let i = categoryKeys.length - 1; i > 0; i--) {
+        const j = Math.floor(restrictRng() * (i + 1));
+        [categoryKeys[i], categoryKeys[j]] = [categoryKeys[j], categoryKeys[i]];
+      }
+      const selectedCategories = categoryKeys.slice(0, numRestrictions);
+      
+      const candidateRestrictions: Restriction[] = [];
+      for (const cat of selectedCategories) {
+        const options = RESTRICTION_CATEGORIES[cat];
+        const selected = options[Math.floor(restrictRng() * options.length)];
+        candidateRestrictions.push(selected);
+      }
+      
+      const validation = validateRestrictions(pool, candidateRestrictions, config.statKey, dartLimit, restrictRng);
+      if (validation.valid) {
+        selectedRestrictions = candidateRestrictions;
+        break;
+      }
+    }
+  }
+
+  const finalPool = selectedRestrictions.length > 0 ? filterByRestrictions(pool, selectedRestrictions) : pool;
+
   const targetRng = seedrandom(`dev-config-${configIndex}`);
   const hardLimit = getDartLimit('hard', density);
-  const { target, ghostPath } = generateTarget(pool, config.statKey, targetRng, hardLimit, dartLimit);
+  const { target, ghostPath } = generateTarget(finalPool, config.statKey, targetRng, hardLimit, dartLimit);
 
   return {
     challengeNumber: configIndex + 1,
@@ -535,7 +712,8 @@ export function getChallengeByIndex(allPlayers: PlayerSeason[], configIndex: num
     statKey: config.statKey,
     statLabel: config.statLabel,
     targetScore: target,
-    description: buildDescription(config),
+    restrictions: selectedRestrictions.length > 0 ? selectedRestrictions : undefined,
+    description: buildDescription(config, selectedRestrictions.length > 0 ? selectedRestrictions : undefined),
     threshold: config.threshold,
     thresholdStatKey: config.thresholdStatKey,
     thresholdStatLabel: config.thresholdStatLabel,
@@ -553,27 +731,42 @@ export function getChallengeForDate(allPlayers: PlayerSeason[], dateStr: string)
 
   const pool = buildPool(allPlayers, config);
 
-  // Restriction gate check for preview too
-  const rotationIndex = challengeNumber % RESTRICTION_ROTATION.length;
-  const rawRestriction = RESTRICTION_ROTATION[rotationIndex];
-  let restriction: Restriction | undefined;
-
+  // Restriction logic for preview mode
+  let selectedRestrictions: Restriction[] = [];
+  const restrictRng = seedrandom(dateStr + '-restrict-combo');
+  const MAX_RETRIES = 10;
+  
   const density = getStatDensity(config.statKey);
   const dartLimit = getDartLimit('normal', density);
-  const restrictionRng = seedrandom(dateStr + '-restrict');
+  const hasThreshold = config.threshold != null;
 
-  if (rawRestriction) {
-    const label = rawRestriction.type === 'league' || rawRestriction.type === 'division'
-      ? `${rawRestriction.value} only`
-      : RESTRICTION_LABELS[rawRestriction.type];
-    const candidateRestriction: Restriction = { ...rawRestriction, label };
-    const validation = validateRestriction(pool, candidateRestriction, config.statKey, dartLimit, restrictionRng);
+  if (!hasThreshold && config.season === undefined) {
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      const numRestrictions = 1;
+    
+    const categoryKeys = Object.keys(RESTRICTION_CATEGORIES);
+    for (let i = categoryKeys.length - 1; i > 0; i--) {
+      const j = Math.floor(restrictRng() * (i + 1));
+      [categoryKeys[i], categoryKeys[j]] = [categoryKeys[j], categoryKeys[i]];
+    }
+    const selectedCategories = categoryKeys.slice(0, numRestrictions);
+    
+    const candidateRestrictions: Restriction[] = [];
+    for (const cat of selectedCategories) {
+      const options = RESTRICTION_CATEGORIES[cat];
+      const selected = options[Math.floor(restrictRng() * options.length)];
+      candidateRestrictions.push(selected);
+    }
+    
+    const validation = validateRestrictions(pool, candidateRestrictions, config.statKey, dartLimit, restrictRng);
     if (validation.valid) {
-      restriction = candidateRestriction;
+      selectedRestrictions = candidateRestrictions;
+      break;
     }
   }
+}
 
-  const finalPool = restriction ? filterByRestriction(pool, restriction) : pool;
+  const finalPool = selectedRestrictions.length > 0 ? filterByRestrictions(pool, selectedRestrictions) : pool;
 
   const targetRng = seedrandom(dateStr + '-target');
   const hardLimit = getDartLimit('hard', density);
@@ -589,8 +782,8 @@ export function getChallengeForDate(allPlayers: PlayerSeason[], dateStr: string)
     statKey: config.statKey,
     statLabel: config.statLabel,
     targetScore: target,
-    restriction,
-    description: buildDescription(config, restriction),
+    restrictions: selectedRestrictions.length > 0 ? selectedRestrictions : undefined,
+    description: buildDescription(config, selectedRestrictions.length > 0 ? selectedRestrictions : undefined),
     ghostPath,
   };
 }

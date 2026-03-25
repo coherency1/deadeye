@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // Deadeye — Player Search
-// Fuse.js fuzzy search with accent normalization (matches statpad-dupe pattern)
+// Fuse.js fuzzy search with accent normalization (matches statpad pattern)
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { PlayerSeason, StatKey } from '../types/game';

@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // Deadeye — MLB Team Metadata
-// Ported from statpad-dupe/src/teams.js + statpad-dupe/src/lahmanLoader.js
+// Ported from statpad/src/teams.js + statpad/src/lahmanLoader.js
 // Logos self-hosted at /logos/{abbr}.png  (no ESPN CDN dependency at scale)
 // ─────────────────────────────────────────────────────────────────────────────
 

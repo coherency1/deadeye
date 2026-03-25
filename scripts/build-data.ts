@@ -36,7 +36,7 @@ const LAHMAN_TO_GAME: Record<string, string | null> = {
   LAN: 'LAD', SFN: 'SFG', SDN: 'SDP', ARI: 'ARI', COL: 'COL',
 };
 
-// ── CSV parser (ported from statpad-dupe/src/lahmanLoader.js) ─────────────────
+// ── CSV parser (ported from statpad/src/lahmanLoader.js) ─────────────────
 function parseCSV(filePath: string): Record<string, string>[] {
   if (!existsSync(filePath)) {
     console.warn(`⚠️  File not found: ${filePath}`);

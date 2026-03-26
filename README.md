@@ -1,8 +1,12 @@
-# 🎯 Deadeye
+# Deadeye (Archived)
 
-A daily baseball darts guessing game. You're given a target score and a stat category — guess MLB player seasons to count down to zero. Get as close to 0 as possible without busting.
+> **This repo has been archived.** Development continues in the [baseball-games monorepo](https://github.com/coherency1/baseball-games) under `games/deadeye/`.
 
-**Built with**: React 18 + Vite + TypeScript + Tailwind CSS
+Daily baseball darts. Given a target score and stat category, guess MLB player seasons to count down to exactly zero.
+
+**Live at:** [coherency.lol/baseball/deadeye](https://coherency.lol/baseball/deadeye/)
+
+**Built with**: React 19 + Vite + TypeScript + Tailwind CSS
 **Data**: [Lahman Baseball Database](http://www.seanlahman.com/baseball-archive/statistics/)
 
 ---
